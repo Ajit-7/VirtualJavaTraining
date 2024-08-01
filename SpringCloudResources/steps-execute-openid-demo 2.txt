@@ -1,0 +1,33 @@
+-> change jdk version in the user environment variable(JAVA_HOME) to java11
+-> browse c drive and search "keycloak", open bin folder , execute command "kc.bat start-dev" using CMD
+-> open keycloak dashboard  by hitting URL: http://localhost:8080 and login as admin / admin
+-> Refer Master dropdown (at left top corner) of keycloak dashboard and select myrealm1
+-> then go to client (myclient)-> refer Credentials tab and copy credentials (LlDQOuvpJ8aPny7jFZ23YaS7V6YtcBlt)
+
+-> open postman agent using windows search-------> open postman thru taskbar hidden icon -->  and click on open postman------> login thru google account.
+
+-> hit this url : http://localhost:8080/realms/myrealm/.well-known/openid-configuration thru postman (GET verb)
+
+     copy issuer and token_endpoint from postman console
+
+-> Run demo  and hit url : http://localhost:8095/emp/controller/getDetails
+
+    you will get 401 error
+so we need to generate token to get access of getDetails resources.
+
+->   generate token using postman by selecting auth type OAuth2.0
+
+  Configure "Configure New Token"  and add below parameters: 
+
+         token name : "token1", 
+         grant type: Client Credentials , 
+         token endpoint: http://localhost:8080/realms/myrealm/protocol/openid-connect/token (copy from postman console)
+         Client id : myclient
+         Client secret : LlDQOuvpJ8aPny7jFZ23YaS7V6YtcBlt  (captured in step 4)
+         Client authentication: send as basic auth header
+
+
+and then click on GET New Access token button
+
+you will get token in popup, copy that token or click on "use token" button
+

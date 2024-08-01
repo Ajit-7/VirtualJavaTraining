@@ -1,0 +1,577 @@
+Spring Cloud:
+
+Agenda for this training:
+--------------------------
+
+Intro of MS Vs Monolithic arch
+Design patterns:
+
+   1. Eureka server/ client
+   2. Fiegn client
+   3. Ribbon load balancer
+   4. Actuator
+   5. Slueth and Zipkin
+   6. API gateway
+   7. Config server/
+   8. Spring security
+   9. AOuth2.0
+   10. Swegger
+   11. Jersy
+   12. RabbitMQ
+   13. ELK stack
+   
+   
+-> EMS - Monolithic[GUI , Department, Salary, Employee.....]   -----> single large DB
+-> SOA - GUI 
+    EMS [Department, Salary, Employee] ----> DB
+	
+-> 	Department MS component-----[Controller, service, DAO]------> DB
+    Salary MS component-----[Controller, service, DAO]------> DB
+	Employee MS component-----[Controller, service, DAO]------> DB
+	
+-> SpringBoot - create microservice components (1000) 
+-> Spring Cloud - Manage MS components   
+	
+-> Design patterns:
+
+     1. Quick setup needed: 
+
+       Solution - 	 (We can create MS component using SpringBoot and Spring Data JPA)
+	   
+	 2. Automation - (CI / CD) (its not part of our course)
+
+           Build--> Test--> deploy etc..
+
+     3. Visibility or Observability:    may be we have or 1000 MS component
+
+        Developers should be able to manage and maintain  alsong with that monitor MS and identify problems automatically.
+
+      Solution: (Actuator, ELK stack, Sleuth and Zipkin)
+
+     4. Configuration Management:
+
+        Developer needs to maintain configurations for 100s of MS components across the MS environment.
+
+         Developers need a comfig management solution:
+
+      Solutoin : Config server management..
+
+
+     5. Dynamic Scale up and Scale Down: 
+
+        Solution : Ribbon load balancer	 
+		
+		
+     6. Pack of cards:
+
+             A----------> B-------------> C	 (down)
+			 
+			 
+		Solution: Circuit Breaker
+
+    7. Debugging: 
+
+        Centralized logging and Dashboard
+
+    		
+		
+-> Service Registry and Discovery:
+-----------------------------------
+
+
+    EMS [Employee, Dept, Salary]
+	
+	
+-> How to refer demos: 
+
+      pom.xml --------> application.properties--------> main class-----> other classes and packages	
+     		
+		
+-> Eureka server:
+
+    1. Eureka works in two modes:
+	
+	      -> Independent modes (One eureka server)
+		  -> Cluster mode (more than one eureka server implementation..)
+		  
+		  Properties of Eureka configurations:
+		  
+		     eureka.client.serviceUrl.defaultZone: Specifies the list of Eureka peers  in cluster mode. Since eureka is running in independent mode  hence the current eureka  instance url itslef is mentioned in the peer list.
+			 
+			 eureka.client.register-with-eureka=false  :  this property is set toe false becoz eureka is not working in cluster mode..
+			 
+			 eureka.client.fetch-registry=false:  This proeprty is set to false , eureka is not working clustered mode and will not need tto snyc its registry...
+			 
+			 
+		  
+-> bootstrap.properties:  
+
+     1. The propertis configured in this file are configured with higher predence  and can not be overriden by any other properteis file. this makes the configured properties read only..
+
+     2. bootstrap.properties  is used to configure properties in parent context. of the spring boot.	 
+		  
+
+     Demo4 - producer : 8081  , 8085, 8086 		
+		
+	 http://cst-employee-producer//emp/controller/getDetails 	
+	 
+	 Demo5: 7096   -- http://localhost:7096/consumer1/getDetails
+	                  http://localhost:7096/consumer2/getDetails
+					  
+					  
+	Ribbon Load Balancer:   Ribbon is a client side load balancer and it allows you to disribute the load among multiple instances of producer and it is enagancing fault tolerance and improviding performance of your application...	
+
+
+
+
+-> OpenFeign REST Client: 
+
+
+      -> It is declarative REST client.
+	  -> It creates a dynamic implementation of an interface which is decorated with annotations.
+	  
+	  
+	  How to implement feign client:
+	  
+	      1. Add open feign client dependency
+		  2. Enable fiegn client using @EnableFeignClients (at primary config class)
+		  2. create interface and annotate that interface using @FeignClient
+		  
+	  How to handle server error :
+
+            decode404: two possible values we can pass (true/false)	  :
+			
+			      decode404=true: ignore 404 error and decode it as normal serer response and dont trigger any exception.
+				  
+				  decode404=false: decode 404 as error trigger exception.
+		  
+		  
+		  demo1008 producer : 7091
+
+          demo1009: feign consumer1:  7092		
+           hit http://localhost:7092/emp/controller/getEmployees to get all employee from producer	
+
+
+          demo1009 : fein client with error handling: 7093	
+
+               http://localhost:7093/emp/controller/getEmployeeById/10001		  
+
+
+----------------------------------------------------------------------------------
+
+
+Feign client with Eureka and Ribbon:
+
+demo number : 1010:  producer instance 1: 7094 , instance2 :7095, instance 3: 7096
+
+demo number : 1011: Consumer instance 1: 8085
+   http://localhost:8085/emp/controller/getEmployeeById/10001     	
+   
+   
+   
+-> Circuit Breaker (Resilience4j): 
+
+    What is the need of Circuit Breaker:
+
+        -> A circuit breaker is an automatically  operated electrical swtich designed to protect an electical circuit from damage caused by access current from an overload or short circuit..
+
+        -> Microservices environment is a distributed environment, due to any unforseen situation a failure can arise at hardware level, network level  or software level. This will hinder the interaction in b/w various MS components..		
+		
+		-> In MS environment problem of cascading failure may arise. Following are the problems related cascading failure:
+		
+		     1. A cascading failure is a process in a system of interconnected parts in which the failure of one or few parts can trigger the failure of other parts in the system..
+			 
+			 2. Cascading failire may occure when one part of the system fails , when this happens , other part must then conpensate for the failed component...This in turn overloads these nodes , causing them to fai as well , propting additional nodes to fail  on after another..
+		
+		
+client--->MS-A------------> MS-B-------------> MS-C (down)
+
+ if sending multiple request to MS-B then it will be failed also along with MS-C
+client--->MS-A------------> MS-B (down)-------------> MS-C (down)
+		     
+  Note : same problem may travel up the comminucation  chain	
+
+
+
+  getProducts (list of product)   : Producer
+  
+                                      CircuitBreaker           
+ client---> Consumer(/getConsumer)------------------------------>  /getProduct
+
+                               if componet working  
+							   if componet is down
+				 		------------------------------> open Circuit Breaker	   
+						
+						
+States of Circuit Breaker:
+
+      1. Close state: The CB allows requests to pass thru as usual. It monitors the requests  and tracks their success or failure..
+
+      2. Open State:
+
+         When the failure rate crosses a predefined thresold , the circuit breaker transitions from closed to open state , where immediatly fails all the requests without passing them  thru the underslying service (getProduct.)
+		 
+		  It will prevent further  load on getProduct service that is likely down or not responding..
+
+          6 request / 50%	
+
+     3. Half-open state: 
+
+   	 After a certain time in the Open state (60 secs) , the circuit breaker transitions to the half-open state, allowing a limited number of reqeust to pass thru and test if the underlying service has recovered or not	  
+	 
+	 
+	 1. Execute demo number 1006 : 7091
+	     execute : http://localhost:7091/emp/controller/setFlag/true
+	 
+	 2. execute demo number 1007 : 7093
+	 
+	     refer client1 controller:
+		       hit http://localhost:7093/to-read1  and see failure
+		 
+		 refer client2  controller with circuit breaker:
+		 
+		    http://localhost:7091/emp/controller/setFlag/true
+			
+			then hit this end point 6 times and observ CB states
+			http://localhost:7093/to-read2
+			
+			then wait for a mins and observe CB states thru console.
+			
+			then call http://localhost:7091/emp/controller/setFlag/false
+			
+			
+			hit http://localhost:7093/to-read1 4 times and obser states thru console
+			
+			
+-> Spring Cloud Actuator (Health check):
+
+
+     What is Actuator?
+	 
+	    -> SpringBoot actuator module helps us to monitor  and manage the SpringBoot application by providing production ready features like health check-up, auditing or metrics , Http tracinh etc...
+		
+		-> All these features can be accessed using HTTP endpoints..
+		
+		Configure : 
+		
+		    To add Actuator module to a springboot application use dep:
+			
+			     spring-boot-starter-actuator (configure in pom.xml)
+				 
+		-> Actuator creates sevaral http endpoints are secured except /health , /info.
+        -> Thereforea full authentication  is required to access all other endpoints.. 
+        -> This can be achieved by :
+
+               management.security.enabled=false (application.properties)
+			   
+-> Actuator endpoints:
+
+       SpringBoot Actuator includes some built-in endpoints :
+
+       /auditevents - exposes audit events information for application...
+       /beans - displayes a complete list of all the spring beans in your application.
+       /caches - EXposes available caches.
+       /conditions - shows the conditions that were evaluated on configuration  and auto configuration classes   and reason why they did and they did not match.
+
+       /configprops- displays list of all the @ConfigurationProperties	 
+       /env - Exposes properties from spring ConfigurableEnvironment
+       /flyway - Shows any flyway data migrations that have been applied/.
+       /health - shows application health information..
+       /httptrace - display Http trace information
+       /info - to get application information       
+       /metrics - Shows metrics information for the application.
+       /mappings - display list of @RequestMappings
+       /sessions - allows ret and deletion of user's session 
+       / shutdown - allows the application be gracefullly shutdown (HTTP verb POST) -by default this endpoint is disabled..
+       /threaddump : performs a thread dump.
+
+
+-> Endpoints categories:
+
+    All the endpoint are categorized into 3 categories:
+
+       1. Configuration:
+
+             autoconfig, /beans, /configpros, /env, /mappings, /info
+
+       2. Runtime information:
+
+            /dump , /health, /metrics, /trace
+       
+	   3. Operational Management Functionality:
+
+              /shutdown : by default it is disabled but we can enable it using below property:
+
+                 endpoints.shutdown.enabled=true (application.properties)	
+
+              note: this endpoint is mapped to POST http verb.	
+
+
+            refer demo number 10012 (for actuator)	
+
+             /refresh: 		
+
+
+
+     http://localhost:8090/actuator/info
+     http://localhost:8090/actuator/beans
+	http://localhost:8090/actuator/configprops
+	http://localhost:8090/actuator/env
+	http://localhost:8090/actuator/mappings
+	
+	http://localhost:8090/actuator/health
+	http://localhost:8090/actuator/metrics
+	http://localhost:8090/actuator/shutdown
+	
+	/actuator/**
+	
+-> Customizing Actuator Endpoints:
+
+    All the actuator endpoints can be customized :
+
+    1. endpoint id [name] can be customized:  info ----> appInfo
+    2. you can secure your endpoints (spring security)
+    3. endpoints can be enabled or disabled 
+
+management.endpoints.web.base-path=/appActuator  (customized context path pf actuator)
+management.endpoints.web.path-mapping.health=appHealth (customized health endpoint)
+#management.endpoints.web.path-mapping.info=appInfo  (customized infor end point)
+management.endpoint.metrics.enabled=false	 (disabled metrics endpoint)
+
+http://localhost:8090/appActuator/threaddump
+
+
+
+-> ELK Stack (Observability / Visibility):
+
+    Need of ELK:
+	
+	    1. In MS architecture pattern the application consistes multiple services instances that runs on multiple machines...
+		
+	    2. Client HTTP requst often spans multiple service instances..
+		3. Each service instance generates some log about what it is doing to a log file. this log file contains errors, warnings,  and debug information in various formats..
+
+        4. As MS component are isolated among themsleves  and they do not share a common DB or log file.. this introduces  a new challenge in the area of distributed log management aggregation..
+
+        5. As the number of MS components increse it is very much nessessary to have some provision of observing and undrstading the logs of distributed MS components, when any problem arises.	
+
+
+            Solution : ELK stack	
+
+
+    What is ELK Stack?
+
+        ELK is a set of open source tools:
+
+           1. Elasticsearch :
+		   
+		          Elastci search is a distributed , JSON based seach and analitics engine designd for maximum realiability and easu management.
+				  
+				  It also has NoSQL data base engine to store, search and analyze big volume of data.
+				  
+				  
+           2. Logstash:
+		   
+		         It is used to aggregate , process data and send it to the Elastic search..
+				 It is used to  convert text log data to JSON that we can do using some plugins.
+				 
+				 
+           3. Kibana:
+		   
+		       Kibana is a data visualization tool which completes ELK stack.
+			   
+			   
+
+
+        The integration of all above tools are used to address Log Aggregation challenge in MS architecture. 
+
+
+
+   ELK Architecture:
+
+       1. Type1 Architecture:
+
+             This architecture is used if all MS components are running on the local machine..
+             Thsi architecture required only Elasticsearch, logstash, Kibana.
+
+        2. Type2 architecture:
+
+             This architectureis used if all MS components are running on the different machine..
+             This architecture requires only Elasticsearch, logstash, Kibana, FileBeats..
+
+             FileBeants : send operations logs data from MS component to Logstash..			 
+     		
+         		 
+	ELK Implementation:
+
+        refer demo number 10014
+
+
+
+    Execution steps:
+
+    1. Start elastic seach:
+
+        open CMD and execute "elasticsearch.bat"
+        hit http://localhost:9200 
+
+    2. Start logstash :
+	
+	   open bin/logstash.conf (copy and pase logstash.conf file into bin folder of logstash)	
+
+       open CMD ---> logstash/bin ---> execute command "logstash.bat -f logstash.conf"	
+
+        hit http://localhost:9600
+
+    3. Start Kibana:
+	
+	      open cmd --> bin folder---> execute "kibana.bat"
+		  
+		  http://localhost:5601
+		  
+		  
+	4. Execute demo number 1014 
+	   hit http://localhost:8092/emp/controller/getDetails
+
+    5. Copy index from elastic search (index is like : "logstash-2024.07.30") 
+	 
+    6. Browse kibaa dashboard ---> Management--> Index Pattern--> create Index pattern--> just enter your index (which you have copied from Elastic seach console)--> and click next--> select i dont want to use time filter from dropdown ----> click create index
+	
+	  After above steps Kibana  starts pointing to Elastic search index..
+	  
+	  Click on discover menus ---> Now click on Index which you have created
+	  
+	  
+	 -> How to create filters:
+
+           click on add filter--> 	 
+        	
+		     
+	 
+-> Sleuth & Zipkin (Distributed Tracing):
+
+
+     Client---------> MS1-------->MS2--------->MS3.........	 
+	 
+	 
+	 
+	 Problem in distributed tracing:
+	 
+	     -> One of the common challenge in MS arch is the ability to debug issues...
+		 -> A simple user action might trigger a chain of downstream MS calls.
+		 -> It would be a tedious to trace the request related to particular user action across MS components..
+         -> In addition to this, it is difficult to track down why a certain MS call is taking so much time..
+         -> It is even difficult to trace and figure out  how a request travels thru the app.
+         -> This introduces a new challenge in the ara of distributed tracing..
+
+
+               This is where "Spring cloud Sleuth" will come to rescue.		 
+	 
+	 
+	 What is Sleuth:
+	 
+	      -> Spring cloud Sleuth is used to address the distributed tracing challnege in MS arch.
+		  -> Sleuth is a project in Spring cloud..
+		  -> Spring cloud sleuth provides distributed tracing capabilities b adding two types of IDS: 
+		      1. Trace ID: Trace id contains a set of span IDs. Trace id will remain same fo entire request chain [from MS1--> MS3]
+			  
+			  2. Span ID:
+
+                     Span ID represents a bacis unit of work, for example snding an HTTP request..
+                     					 
+			  
+	 
+	 Client---------> MS1[trace12345, trace12345]-------->MS2[trace12345, span12345]--------->MS3MS2[trace12345, span123789].........	
+	 
+	 
+	 How to implement Sleuth:
+	 
+	     1. Add dep : spring-cloud-starter-sleuth, spring-cloud-sleuth-zipkin
+	     2. configure sleuth in application.properties file (if required)
+		 
+Client -----> consumer(8096)------------>mediator(8095)---------------> producer(8090)	
+
+[producer,,] 	 
+
+[consumer,cebfb192c36d184b,cebfb192c36d184b] - trace id and span id remains same
+[mediator,cebfb192c36d184b,080ed0a23fe435c8]
+[producer,cebfb192c36d184b,980463da6ba5d7c5]
+
+
+What is use of Zipkin:
+
+    -> The additional information provided by Sleuth  in the application logs is good but how to understand it. and how to visualize it..
+	-> How zipkin can help us:
+	
+	    1. How to visualize the request flow among the MS components using the traceid..
+		2. How to calculate the time taken for entire request  processing.
+		3. How to calculate , how much time  a request tokk for a requst trip  from one MS to another MS component..
+		4. How to find out, which MS component takes long time to respond..
+		
+		
+		start zipkin server:
+		
+		    browse zipkin folder--------> open cmd----------> java -jar zipkin-server-2.21.7-exec.jar
+			
+			hit http://localhost:9411/
+			
+		hit this end point http://localhost:8096/emp/controller/getDetails	
+		
+		
+-> API Gateway:
+
+     Need of API gateway:
+
+       1. The crux of MS pattern is to create an independent services which can scalled  and deployed independently.
+       2. in a business domain , a MS application can compose of 50, 100, 1000, 10000..etc..
+
+       Usecase:
+	   
+	       Design a UI application which is used to present the required information from 50 MS component..
+		   
+		   
+	   Challenges to implement this requirement:
+
+          -> From a UI developer perspective , collect informtion from 50 MS component.
+
+                  it should call 50 REST calls. In order to achieve this , developer must have information about MS APIs  : URL pattern, IP, port number etc..This information has to be given at many places..
+
+          -> it is not good practice to repeat th RST api details in many places. wherever there is any change in in the URL  (port or  IP).. it can lead to human error and inconsistent dash board..
+
+           -> This type of design pattern  is a breach in encapsulation..	
+
+           Solution:
+
+     The client communicate to all MS components by single entry points (API gateway)	
+
+
+    Implementation of API gateway:
+
+      1. <dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-gateway</artifactId>
+		</dependency>
+     2.  configure api routes in configuration (yml)
+	 
+	 spring:
+  cloud:
+    gateway:
+      routes:
+      - id: employeeModule
+        uri: http://localhost:8081/emp/controller/
+        predicates:
+        - Path=/emp/controller/**
+      - id: studentModule
+        uri: http://localhost:8082/student/controller/
+        predicates:
+        - Path=/student/controller/**
+		
+		
+		refer demo number 1018_1, 1018_2 and 1018_3
+		
+		hit http://localhost:8083/emp/controller/getDetails for employee service
+		
+		hit http://localhost:8083/student/controller/getDetails for student service
+		
+
+      	   

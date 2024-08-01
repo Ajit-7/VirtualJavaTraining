@@ -1,0 +1,264 @@
+Spring Cloud:
+
+Agenda for this training:
+--------------------------
+
+Intro of MS Vs Monolithic arch
+Design patterns:
+
+   1. Eureka server/ client
+   2. Fiegn client
+   3. Ribbon load balancer
+   4. Actuator
+   5. Slueth and Zipkin
+   6. API gateway
+   7. Config server/
+   8. Spring security
+   9. AOuth2.0
+   10. Swegger
+   11. Jersy
+   12. RabbitMQ
+   13. ELK stack
+   
+   
+-> EMS - Monolithic[GUI , Department, Salary, Employee.....]   -----> single large DB
+-> SOA - GUI 
+    EMS [Department, Salary, Employee] ----> DB
+	
+-> 	Department MS component-----[Controller, service, DAO]------> DB
+    Salary MS component-----[Controller, service, DAO]------> DB
+	Employee MS component-----[Controller, service, DAO]------> DB
+	
+-> SpringBoot - create microservice components (1000) 
+-> Spring Cloud - Manage MS components   
+	
+-> Design patterns:
+
+     1. Quick setup needed: 
+
+       Solution - 	 (We can create MS component using SpringBoot and Spring Data JPA)
+	   
+	 2. Automation - (CI / CD) (its not part of our course)
+
+           Build--> Test--> deploy etc..
+
+     3. Visibility or Observability:    may be we have or 1000 MS component
+
+        Developers should be able to manage and maintain  alsong with that monitor MS and identify problems automatically.
+
+      Solution: (Actuator, ELK stack, Sleuth and Zipkin)
+
+     4. Configuration Management:
+
+        Developer needs to maintain configurations for 100s of MS components across the MS environment.
+
+         Developers need a comfig management solution:
+
+      Solutoin : Config server management..
+
+
+     5. Dynamic Scale up and Scale Down: 
+
+        Solution : Ribbon load balancer	 
+		
+		
+     6. Pack of cards:
+
+             A----------> B-------------> C	 (down)
+			 
+			 
+		Solution: Circuit Breaker
+
+    7. Debugging: 
+
+        Centralized logging and Dashboard
+
+    		
+		
+-> Service Registry and Discovery:
+-----------------------------------
+
+
+    EMS [Employee, Dept, Salary]
+	
+	
+-> How to refer demos: 
+
+      pom.xml --------> application.properties--------> main class-----> other classes and packages	
+     		
+		
+-> Eureka server:
+
+    1. Eureka works in two modes:
+	
+	      -> Independent modes (One eureka server)
+		  -> Cluster mode (more than one eureka server implementation..)
+		  
+		  Properties of Eureka configurations:
+		  
+		     eureka.client.serviceUrl.defaultZone: Specifies the list of Eureka peers  in cluster mode. Since eureka is running in independent mode  hence the current eureka  instance url itslef is mentioned in the peer list.
+			 
+			 eureka.client.register-with-eureka=false  :  this property is set toe false becoz eureka is not working in cluster mode..
+			 
+			 eureka.client.fetch-registry=false:  This proeprty is set to false , eureka is not working clustered mode and will not need tto snyc its registry...
+			 
+			 
+		  
+-> bootstrap.properties:  
+
+     1. The propertis configured in this file are configured with higher predence  and can not be overriden by any other properteis file. this makes the configured properties read only..
+
+     2. bootstrap.properties  is used to configure properties in parent context. of the spring boot.	 
+		  
+
+     Demo4 - producer : 8081  , 8085, 8086 		
+		
+	 http://cst-employee-producer//emp/controller/getDetails 	
+	 
+	 Demo5: 7096   -- http://localhost:7096/consumer1/getDetails
+	                  http://localhost:7096/consumer2/getDetails
+					  
+					  
+	Ribbon Load Balancer:   Ribbon is a client side load balancer and it allows you to disribute the load among multiple instances of producer and it is enagancing fault tolerance and improviding performance of your application...	
+
+
+
+
+-> OpenFeign REST Client: 
+
+
+      -> It is declarative REST client.
+	  -> It creates a dynamic implementation of an interface which is decorated with annotations.
+	  
+	  
+	  How to implement feign client:
+	  
+	      1. Add open feign client dependency
+		  2. Enable fiegn client using @EnableFeignClients (at primary config class)
+		  2. create interface and annotate that interface using @FeignClient
+		  
+	  How to handle server error :
+
+            decode404: two possible values we can pass (true/false)	  :
+			
+			      decode404=true: ignore 404 error and decode it as normal serer response and dont trigger any exception.
+				  
+				  decode404=false: decode 404 as error trigger exception.
+		  
+		  
+		  demo1008 producer : 7091
+
+          demo1009: feign consumer1:  7092		
+           hit http://localhost:7092/emp/controller/getEmployees to get all employee from producer	
+
+
+          demo1009 : fein client with error handling: 7093	
+
+               http://localhost:7093/emp/controller/getEmployeeById/10001		  
+
+
+----------------------------------------------------------------------------------
+
+
+Feign client with Eureka and Ribbon:
+
+demo number : 1010:  producer instance 1: 7094 , instance2 :7095, instance 3: 7096
+
+demo number : 1011: Consumer instance 1: 8085
+   http://localhost:8085/emp/controller/getEmployeeById/10001     	
+   
+   
+   
+-> Circuit Breaker (Resilience4j): 
+
+    What is the need of Circuit Breaker:
+
+        -> A circuit breaker is an automatically  operated electrical swtich designed to protect an electical circuit from damage caused by access current from an overload or short circuit..
+
+        -> Microservices environment is a distributed environment, due to any unforseen situation a failure can arise at hardware level, network level  or software level. This will hinder the interaction in b/w various MS components..		
+		
+		-> In MS environment problem of cascading failure may arise. Following are the problems related cascading failure:
+		
+		     1. A cascading failure is a process in a system of interconnected parts in which the failure of one or few parts can trigger the failure of other parts in the system..
+			 
+			 2. Cascading failire may occure when one part of the system fails , when this happens , other part must then conpensate for the failed component...This in turn overloads these nodes , causing them to fai as well , propting additional nodes to fail  on after another..
+		
+		
+client--->MS-A------------> MS-B-------------> MS-C (down)
+
+ if sending multiple request to MS-B then it will be failed also along with MS-C
+client--->MS-A------------> MS-B (down)-------------> MS-C (down)
+		     
+  Note : same problem may travel up the comminucation  chain	
+
+
+
+  getProducts (list of product)   : Producer
+  
+                                      CircuitBreaker           
+ client---> Consumer(/getConsumer)------------------------------>  /getProduct
+
+                               if componet working  
+							   if componet is down
+				 		------------------------------> open Circuit Breaker	   
+						
+						
+States of Circuit Breaker:
+
+      1. Close state: The CB allows requests to pass thru as usual. It monitors the requests  and tracks their success or failure..
+
+      2. Open State:
+
+         When the failure rate crosses a predefined thresold , the circuit breaker transitions from closed to open state , where immediatly fails all the requests without passing them  thru the underslying service (getProduct.)
+		 
+		  It will prevent further  load on getProduct service that is likely down or not responding..
+
+          6 request / 50%	
+
+     3. Half-open state: 
+
+   	 After a certain time in the Open state (60 secs) , the circuit breaker transitions to the half-open state, allowing a limited number of reqeust to pass thru and test if the underlying service has recovered or not	  
+	 
+	 
+	 1. Execute demo number 1006 : 7091
+	     execute : http://localhost:7091/emp/controller/setFlag/true
+	 
+	 2. execute demo number 1007 : 7093
+	 
+	     refer client1 controller:
+		       hit http://localhost:7093/to-read1  and see failure
+		 
+		 refer client2  controller with circuit breaker:
+		 
+		    http://localhost:7091/emp/controller/setFlag/true
+			
+			then hit this end point 6 times and observ CB states
+			http://localhost:7093/to-read2
+			
+			then wait for a mins and observe CB states thru console.
+			
+			then call http://localhost:7091/emp/controller/setFlag/false
+			
+			
+			hit http://localhost:7093/to-read1 4 times and obser states thru console
+			
+			
+
+         		 
+		 
+		     
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
