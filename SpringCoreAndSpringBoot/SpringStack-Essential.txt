@@ -1,0 +1,446 @@
+Core java : desktop applications --------- > Spring core----> integration of spring and java
+JDBC / JPA: Database specific applications--> Spring ORM----> integration of Spring with JDBC/ JPA
+Web application: servlet/jsp
+Enterprise applications---> JEE--------------> Spring MVC----> Spring + JEE
+
+JUnit or NGUnit---------------> Spring Test + junit or some other unit test frameworks
+
+
+Spring Data JPA
+SpringBoot
+
+
+
+-> Loose and Tight Coupling?
+
+  1. Inheritance : IS-A  (Employee IS-A Person, Cat IS-A Animal, Manager IS-A Employee)
+  2. Association : HAS-A  (Employee HAS-A Address, Employee HAS-A Contact)
+  
+     -> Composition : tight coupling
+	 -> Aggregation : loose coupling
+
+public class Employee{
+
+   private String name;
+   private Address address; // HAS-A
+   
+   public Employee(){
+        this.address = new Address("Indore", "MP"); // tight coupling
+   }
+
+}
+  // object creation logic is tightly copuled with Employee class, which is bad programming practice..
+
+PostelAddress (Child class of Address)
+
+
+-> Loose copuling: 
+
+   public class Employee{
+
+   private String name;
+   private Address address; // HAS-A
+   
+   public Employee(Address address){
+        this.address = address; // loose coupling
+   }
+
+}
+
+-> Some Unaddressed issues with Loose copuling:
+
+   1. Object has to be created by the program and given to java run time.
+   2. Code is still tightly coupled  to the object creation logic.. (check UITester)
+   
+   
+   UITeser-----> 
+   
+                Normal flow (by JVM)
+   [UITeser ]---------------------> JVM[(Employee and Address)]
+   
+           
+                                 Inversion of Control (IoC)
+   [UITester]<---------------------JVM------------------- different runtime[employee, adddress]
+   
+   
+IoC:  IOC means, runtime will be capable to create objects  and provide it back in the code.
+
+      Frameworks provide a container   that supports IOC:
+
+       -> Spring frameworks   
+       -> Guice
+       -> Pico	 
+
+
+IOC can be achieved using :
+
+    -> Dependency injection
+    -> Autowiring	
+	
+	
+-> Dependency injection: 
+
+
+     Its a design pattern used in OOPS to achieve IOC.	
+	 
+	 It allows a class to recieve its dependencies from an external  source rather than creating them internally.
+	 
+	                     Spring container or  different runtime[employee and address]
+	DI promotes decoupling and easier testing.	
+
+
+
+-> xml file (Spring configuration file) : raw information to configuration file [information about classes, their properties, and depdencies.]	
+
+-> Spring containers:
+
+     Two types of conainers:
+	 
+	    1. BeanFactory
+		2. ApplicationContext (Spring container or runtime or context)
+			
+			ApplicationContext--------------> Spring xml file ---------> Springcontainer[employee, address]
+			
+			applicationContext has method getBean("employee"); to access any object from spring container.
+			
+			Note: any object in the container (employee or address) is called bean..
+			
+			
+			Ways to initialize objects:
+			
+			   using constructor
+			   using setter methods
+			   
+Flow of execution (10002_SpringsDI_Intro_A_setters)	:
+
+    1. Main class is executed by JVM
+             ApplicationContext applicationContext = new 
+				ClassPathXmlApplicationContext("com/accenture/lkm/resources/my_springbean.xml");
+
+	UITester----------> JVM runtime	 ----->    Spring container[employee <-------address]
+	
+	2. Spring container wil read xml configuration file. container will read name of the classes (Employee and Address, references and dependency..)
+	
+	
+	3. get beans from container using getBean()
+	
+	     Employee employee = applicationContext.getBean("employee");
+		 
+		 
+Note: Ability of the Spring container to manage the instances/beans and provide them back to the code when needed is called DI (IOC)...		 
+
+
+Address address1 = new Address("Indore", "MP");
+
+Address address2 = new Address("Hyd", "Tel");
+
+-> Setter injection:
+
+    Inject dependencies by calling setter methods of a class.
+	
+	<property> element of <bean> defiction to inject values..
+	
+-> XML shortcut with p-namespace
+
+   <property name="employeeId" value="1001"></property>	
+   
+   
+   <bean>
+       p:employeeId="1001"
+	   p:employeeName="Myra"
+   </bean>
+   
+   
+Constructor Injection:
+
+Address address1 = new Address("Indore", "MP");
+
+Address address2 = new Address("Hyd", "Tel");
+
+
+   -> Spring framework can use constructor to inject depdencies
+   -> Dep injected  using constructor are called mandatory dependencies.Without passing them instance for the class can not be created..
+   -> Dependencies are created first  and then injected into the other instance vy calling constructor.
+   
+   Mandatory depdencies:
+   Customer ----------------> Account (HAS-A)
+   Account account  =new Account("type", 1000);
+   Customer customer = new Customer(account); //(constructor) account is the mandatory depdencies
+   
+   <constructor-arg>------> invoke constructor ------------> inject mandatory dependencies
+   
+   Optional depdencies:
+      Department--------------> Faculty (HAS-A)
+	  
+	  Department dept = new Department("IT");
+	  
+	  Faculty faculty = new Faculty("Myra");
+	  
+	  dept.setFaculty(faculty);/// setter dep injection
+   
+	<property>---> invoke setter methods -----> inject optional dependencies
+	
+	
+	
+	Note: Dependencies are injected based on order of the datatypes present in the constructor.
+	
+-> Constructor injection parameter resolution:
+
+
+    -> For constructor injection paramters resolution is done by mapping the signature of constructor with the sequence  of <constructor-arg> mentioned in the bean definition (xml).
+	
+	-> If parameters compose of references type only than order of the argument does not matter...
+
+    	
+-> Addressing issues with Constructor injection:
+
+      Dependencies are injected based on the order in which they are listed.
+
+      Question:  what if the order of argument defined in the configuration (xml) file is different from order of argument defined in the constructor	..
+
+      Result : Will get exception UnsatisfiedDependencyException
+
+      How to fix Above exception:  use "type" attribute of constructor-arg element to define type of an argument. 	  
+	  
+	  
+	  
+	  
+	  Another problem: what if the data type of the argument is same..for instance email and phoneNumber has datatype of String..
+	  
+	  Solution: use "index" or "name" attribute if constructor has more than one parameter of same datatype.
+	  
+	  
+	  <property name="employeeName" value="Myra">
+	  
+	  <property name="employeeName">
+	  
+	      <value>slkfjdsfjdskfldsjfkdjflkdsjf dsfdsfdsfdsfdsf   dsfdsfdsfdsfdsfdsf</value>
+	  </property>
+	  
+value attribute:  use value attribute for simple and single line values ..
+
+<value> : when you need to handle complex or if you wanna add multiline string or values..	  
+	  
+-> Inner beans:
+
+
+     List<Contact> list = new ArrayList();
+	 
+	 Contact contact = new Contact();
+	 Contact contact2 = new Contact();
+	 
+	 list.add(new Contact());
+	 list.add(new Contact())
+
+    1. inner bean is a bean	   created within in a <bean>.
+	2. Inner bean cant be used  outside the bean in which it is defined.
+	3. inner bean need not to define the id attribute as they can not be reffered from any other part of the program.
+	4. Thee beans cant exist independently and using getBean() cannot be reffered outside the spring context.
+	  
+	  
+-> Bean Scopes:
+
+     1. <bean>  tag in spring config xml file  defines a template for creating an instance of bean.	  
+	 
+	 2.For every bean instance  spring-core supports followign scopes:
+
+       -> Singleton (default scope) - Single bean instance per spring container and shareed across the entire spring container..
+       -> Prototype - Creates a new bean instance each time a bean is requested...	
+
+       Scopes for web applications: 
+       -> Request (web application only) : a new instance of the bean is created for each request.
+       -> Session (web application only) : a new instance of the bean is created for eah Http session
+       -> Application  scope or Global session: (Application context) : a new instance f the bean is created for entire application.	   
+	  
+	  
+	  JDBC connection / JPA EntityManagerFactory  (if bean is stateless)-----------> set it as singelton
+	  
+	  if bean is stateful ----> prototype
+	  
+	  
+-> Java collections:
+
+       Employee{
+           List<Address> addList;
+
+       }	   
+	   
+	  -> Spring conainer can instantiate beans with java collection:
+
+               List, Set, Map, Properties are core interfaces of java collection framework.
+               Spring framework provides <list/>, <set/>, <map/>, <props/> elements to support collection types.			   
+			   
+
+
+-> Manual wiring:
+			   
+    <bean id="employee" class="com.accenture.lkm.Employee">
+		<property name="employeeId" value="1001"></property>
+		<property name="employeeName" value="JAS"></property>
+		<property name="salary" value="56000.0"></property>
+		<property name="address" ref="address"></property><!-- manual wiring -->
+	</bean>
+	
+-> Autowiring:
+
+    1. autowire is the short name for automatic dependency injection.
+	2. Spring can resolve dependencies b/w collaborating beans if autowiring is enabled by scanning config file..
+	3. Autowiring eliminates the need to specify bean references by <property> and <constructor-arg> element in the config xml file.
+	4. Autowiring in xml configuration can be enabled using "autowire" attribute of <bean> element.
+	
+	  <bean id="address" class="com.accenture.lkm.Address">
+	  
+	  <bean id="employee" class="com.accenture.lkm.Employee" autowire="byName">
+		<property name="employeeId" value="1001"></property>
+		<property name="employeeName" value="JAS"></property>
+		<property name="salary" value="56000.0"></property>
+		
+	</bean>
+	
+    5. Autowiring functionality has for more modes:
+
+         -> byName	:
+		 
+		      Spring container[employee (Employee), address (Address), tempAdd (Address)]
+		     
+		 -> byType:
+		 
+		    Spring container scans matching bean by type.
+			if found , then bean is injecyed by invoking setter method.
+			if a matching bean of type address is no found , then property is not set and exception raised.
+			
+			Spring container[employee (Employee), address (Address)]
+			
+			<bean id="employee" class="com.accenture.lkm.Employee" autowire="byType">
+		<property name="employeeId" value="1001"></property>
+		<property name="employeeName" value="JAS"></property>
+		<property name="salary" value="56000.0"></property>
+		
+	</bean>
+	
+	       If there are two beans of same Address type then use property "primary=true"
+		   
+		   
+		 -> constructor:
+		      Autowiring by constructor is equivelent to byType
+			  autowire byType injects the dependency by invoking setter method.
+			  autowire by constructor autowire="constructor" injects dependency by invoking constructor.
+		 
+		 -> none
+	
+-> Annotations:
+
+    @Override	
+	
+	Imperactive programming style:
+	developer (What to do)--> how to do (developer)
+	
+	Declarative programming style: 
+	developer (What to do)--> how to do (by runtime)
+	
+	
+	-> An alternative way to provide configuration is using annotation..
+	-> Annotation based configuration rely on bytecode.
+	-> instead of using <bean>, <property>, <constructor-arg>  elements to define bean or inject dependencies, we move this configuration to
+	-> Configuration information to detect annotations  should be provided in the xml configuration file..
+	
+	
+	Types of annotations:
+	
+	
+	   1. Spring standard annotation: @Value, @Autowired etc..
+	   2. JSR250: @Resource, @PreDestroy, @PostConstruct etc..
+	   3. JSR330: @Inject, @Named, @Singleton etc..
+	   4. Stereo type annotations:
+	   
+	         @Component, @Repository, @Service, @Controller, @RestController, @ControllerAdvise and @Configuration.
+	
+	        -> Stereotype annotations are used to mark classes so that class can be scanned by spring container and after scanning container will create the instance  of the same class  and manage the instance as spring bean.
+			
+			@Component
+			public class Student{
+			
+			}
+			
+			
+			1. @Component: indicates that an annotated class is a spring component.
+			2. @Service: specialization of @Component for service layer
+			3. @Repository: specialization of @Component for persistence or dao layer.
+			4. @Controller : specialization of @Component for web layer.
+			
+			
+	Note: annotations are not replacement of xml configuration. They help in configuring the beans by wirting lesser xml code..
+
+
+-> How to enable annotations:
+
+   	-> <context:annotation-config>: activates annotation to be detected  in bean classes for a registered bean. @Required, @Autowired, JSR250, @Resource.....
+	
+	-> <context:component-scan> extends <context:annotation-config> :  it scans the packages to register bean as well as detect dependencies.
+	
+	   <context:component-scan base-package="com.accenture.lkm">
+	   
+-> @Value: assign values to fields  and method arguments ...
+
+        @Value("#{expression}")	  
+		
+		@Value("1000")
+		
+		
+-> Some more standard annotations:   @Autowired,  @Qualifier, @Scope, @Bean, @Primary
+
+                                @PostConstruct : method can be annotate using this annotation, that should be executed after dependency injection is done.
+								
+								@PreDestroy : execute method before bean is destroyed..
+								
+-> Spring Expression Language(SpEL):
+
+
+     #{expression}								
+	 
+	 
+	 
+-> Profile:
+
+
+     -> Profile were introduced  from spring 3.1.
+      -> Enables the developer to load different set of classes  for different project environment (dev, prod, test).
+     -> @Profile annotation is used at class level  to perform selective loading of the classes based on environment.
+
+
+      EMP project{
+	  
+	      @Profile("prod")
+	      EmployeeDAO.java---> actual prod DB ( if i execute my project in production env)
+		  
+		  @Profile("dev")
+		  EmployeeDAODev.java---> local DB (if i execute my project in the development env)
+	  
+	  }	 
+	  
+	  
+	  
+	  Activate profile by setting system property:
+	  
+	   1. System.setProperty("spring.profiles.active", "prod")
+	   
+	   
+	   2. right click on the project--> RunConfiguration--> Environment tab--> click NEW--> set name=  spring.profiles.active, value=deve or prod 
+	   
+	   
+-> @Autowired annotation:
+
+
+     1. @Autowired is used to inject references and autowire an other bean.
+     2. @Autowired can be used on Field, setter (setter injection), constructor (constructor injection) , you can use it on any other methods.	 
+	 
+	 @Autowired  // eliminates the need of setter method
+	 private Address address;
+	 
+	 @Autowired // setter injection(
+	 public void setAddress(Address address){}
+	 
+	 @Autowired // constructor injection
+	 public Employee(Address address){}
+	   
+	   

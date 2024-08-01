@@ -1,0 +1,1381 @@
+Core java : desktop applications --------- > Spring core----> integration of spring and java
+JDBC / JPA: Database specific applications--> Spring ORM----> integration of Spring with JDBC/ JPA
+Web application: servlet/jsp
+Enterprise applications---> JEE--------------> Spring MVC----> Spring + JEE
+
+JUnit or NGUnit---------------> Spring Test + junit or some other unit test frameworks
+
+
+Spring Data JPA
+SpringBoot
+
+
+
+-> Loose and Tight Coupling?
+
+  1. Inheritance : IS-A  (Employee IS-A Person, Cat IS-A Animal, Manager IS-A Employee)
+  2. Association : HAS-A  (Employee HAS-A Address, Employee HAS-A Contact)
+  
+     -> Composition : tight coupling
+	 -> Aggregation : loose coupling
+
+public class Employee{
+
+   private String name;
+   private Address address; // HAS-A
+   
+   public Employee(){
+        this.address = new Address("Indore", "MP"); // tight coupling
+   }
+
+}
+  // object creation logic is tightly copuled with Employee class, which is bad programming practice..
+
+PostelAddress (Child class of Address)
+
+
+-> Loose copuling: 
+
+   public class Employee{
+
+   private String name;
+   private Address address; // HAS-A
+   
+   public Employee(Address address){
+        this.address = address; // loose coupling
+   }
+
+}
+
+-> Some Unaddressed issues with Loose copuling:
+
+   1. Object has to be created by the program and given to java run time.
+   2. Code is still tightly coupled  to the object creation logic.. (check UITester)
+   
+   
+   UITeser-----> 
+   
+                Normal flow (by JVM)
+   [UITeser ]---------------------> JVM[(Employee and Address)]
+   
+           
+                                 Inversion of Control (IoC)
+   [UITester]<---------------------JVM------------------- different runtime[employee, adddress]
+   
+   
+IoC:  IOC means, runtime will be capable to create objects  and provide it back in the code.
+
+      Frameworks provide a container   that supports IOC:
+
+       -> Spring frameworks   
+       -> Guice
+       -> Pico	 
+
+
+IOC can be achieved using :
+
+    -> Dependency injection
+    -> Autowiring	
+	
+	
+-> Dependency injection: 
+
+
+     Its a design pattern used in OOPS to achieve IOC.	
+	 
+	 It allows a class to recieve its dependencies from an external  source rather than creating them internally.
+	 
+	                     Spring container or  different runtime[employee and address]
+	DI promotes decoupling and easier testing.	
+
+
+
+-> xml file (Spring configuration file) : raw information to configuration file [information about classes, their properties, and depdencies.]	
+
+-> Spring containers:
+
+     Two types of conainers:
+	 
+	    1. BeanFactory
+		2. ApplicationContext (Spring container or runtime or context)
+			
+			ApplicationContext--------------> Spring xml file ---------> Springcontainer[employee, address]
+			
+			applicationContext has method getBean("employee"); to access any object from spring container.
+			
+			Note: any object in the container (employee or address) is called bean..
+			
+			
+			Ways to initialize objects:
+			
+			   using constructor
+			   using setter methods
+			   
+Flow of execution (10002_SpringsDI_Intro_A_setters)	:
+
+    1. Main class is executed by JVM
+             ApplicationContext applicationContext = new 
+				ClassPathXmlApplicationContext("com/accenture/lkm/resources/my_springbean.xml");
+
+	UITester----------> JVM runtime	 ----->    Spring container[employee <-------address]
+	
+	2. Spring container wil read xml configuration file. container will read name of the classes (Employee and Address, references and dependency..)
+	
+	
+	3. get beans from container using getBean()
+	
+	     Employee employee = applicationContext.getBean("employee");
+		 
+		 
+Note: Ability of the Spring container to manage the instances/beans and provide them back to the code when needed is called DI (IOC)...		 
+
+
+Address address1 = new Address("Indore", "MP");
+
+Address address2 = new Address("Hyd", "Tel");
+
+-> Setter injection:
+
+    Inject dependencies by calling setter methods of a class.
+	
+	<property> element of <bean> defiction to inject values..
+	
+-> XML shortcut with p-namespace
+
+   <property name="employeeId" value="1001"></property>	
+   
+   
+   <bean>
+       p:employeeId="1001"
+	   p:employeeName="Myra"
+   </bean>
+   
+   
+Constructor Injection:
+
+Address address1 = new Address("Indore", "MP");
+
+Address address2 = new Address("Hyd", "Tel");
+
+
+   -> Spring framework can use constructor to inject depdencies
+   -> Dep injected  using constructor are called mandatory dependencies.Without passing them instance for the class can not be created..
+   -> Dependencies are created first  and then injected into the other instance vy calling constructor.
+   
+   Mandatory depdencies:
+   Customer ----------------> Account (HAS-A)
+   Account account  =new Account("type", 1000);
+   Customer customer = new Customer(account); //(constructor) account is the mandatory depdencies
+   
+   <constructor-arg>------> invoke constructor ------------> inject mandatory dependencies
+   
+   Optional depdencies:
+      Department--------------> Faculty (HAS-A)
+	  
+	  Department dept = new Department("IT");
+	  
+	  Faculty faculty = new Faculty("Myra");
+	  
+	  dept.setFaculty(faculty);/// setter dep injection
+   
+	<property>---> invoke setter methods -----> inject optional dependencies
+	
+	
+	
+	Note: Dependencies are injected based on order of the datatypes present in the constructor.
+	
+-> Constructor injection parameter resolution:
+
+
+    -> For constructor injection paramters resolution is done by mapping the signature of constructor with the sequence  of <constructor-arg> mentioned in the bean definition (xml).
+	
+	-> If parameters compose of references type only than order of the argument does not matter...
+
+    	
+-> Addressing issues with Constructor injection:
+
+      Dependencies are injected based on the order in which they are listed.
+
+      Question:  what if the order of argument defined in the configuration (xml) file is different from order of argument defined in the constructor	..
+
+      Result : Will get exception UnsatisfiedDependencyException
+
+      How to fix Above exception:  use "type" attribute of constructor-arg element to define type of an argument. 	  
+	  
+	  
+	  
+	  
+	  Another problem: what if the data type of the argument is same..for instance email and phoneNumber has datatype of String..
+	  
+	  Solution: use "index" or "name" attribute if constructor has more than one parameter of same datatype.
+	  
+	  
+	  <property name="employeeName" value="Myra">
+	  
+	  <property name="employeeName">
+	  
+	      <value>slkfjdsfjdskfldsjfkdjflkdsjf dsfdsfdsfdsfdsf   dsfdsfdsfdsfdsfdsf</value>
+	  </property>
+	  
+value attribute:  use value attribute for simple and single line values ..
+
+<value> : when you need to handle complex or if you wanna add multiline string or values..	  
+	  
+-> Inner beans:
+
+
+     List<Contact> list = new ArrayList();
+	 
+	 Contact contact = new Contact();
+	 Contact contact2 = new Contact();
+	 
+	 list.add(new Contact());
+	 list.add(new Contact())
+
+    1. inner bean is a bean	   created within in a <bean>.
+	2. Inner bean cant be used  outside the bean in which it is defined.
+	3. inner bean need not to define the id attribute as they can not be reffered from any other part of the program.
+	4. Thee beans cant exist independently and using getBean() cannot be reffered outside the spring context.
+	  
+	  
+-> Bean Scopes:
+
+     1. <bean>  tag in spring config xml file  defines a template for creating an instance of bean.	  
+	 
+	 2.For every bean instance  spring-core supports followign scopes:
+
+       -> Singleton (default scope) - Single bean instance per spring container and shareed across the entire spring container..
+       -> Prototype - Creates a new bean instance each time a bean is requested...	
+
+       Scopes for web applications: 
+       -> Request (web application only) : a new instance of the bean is created for each request.
+       -> Session (web application only) : a new instance of the bean is created for eah Http session
+       -> Application  scope or Global session: (Application context) : a new instance f the bean is created for entire application.	   
+	  
+	  
+	  JDBC connection / JPA EntityManagerFactory  (if bean is stateless)-----------> set it as singelton
+	  
+	  if bean is stateful ----> prototype
+	  
+	  
+-> Java collections:
+
+       Employee{
+           List<Address> addList;
+
+       }	   
+	   
+	  -> Spring conainer can instantiate beans with java collection:
+
+               List, Set, Map, Properties are core interfaces of java collection framework.
+               Spring framework provides <list/>, <set/>, <map/>, <props/> elements to support collection types.			   
+			   
+
+
+-> Manual wiring:
+			   
+    <bean id="employee" class="com.accenture.lkm.Employee">
+		<property name="employeeId" value="1001"></property>
+		<property name="employeeName" value="JAS"></property>
+		<property name="salary" value="56000.0"></property>
+		<property name="address" ref="address"></property><!-- manual wiring -->
+	</bean>
+	
+-> Autowiring:
+
+    1. autowire is the short name for automatic dependency injection.
+	2. Spring can resolve dependencies b/w collaborating beans if autowiring is enabled by scanning config file..
+	3. Autowiring eliminates the need to specify bean references by <property> and <constructor-arg> element in the config xml file.
+	4. Autowiring in xml configuration can be enabled using "autowire" attribute of <bean> element.
+	
+	  <bean id="address" class="com.accenture.lkm.Address">
+	  
+	  <bean id="employee" class="com.accenture.lkm.Employee" autowire="byName">
+		<property name="employeeId" value="1001"></property>
+		<property name="employeeName" value="JAS"></property>
+		<property name="salary" value="56000.0"></property>
+		
+	</bean>
+	
+    5. Autowiring functionality has for more modes:
+
+         -> byName	:
+		 
+		      Spring container[employee (Employee), address (Address), tempAdd (Address)]
+		     
+		 -> byType:
+		 
+		    Spring container scans matching bean by type.
+			if found , then bean is injecyed by invoking setter method.
+			if a matching bean of type address is no found , then property is not set and exception raised.
+			
+			Spring container[employee (Employee), address (Address)]
+			
+			<bean id="employee" class="com.accenture.lkm.Employee" autowire="byType">
+		<property name="employeeId" value="1001"></property>
+		<property name="employeeName" value="JAS"></property>
+		<property name="salary" value="56000.0"></property>
+		
+	</bean>
+	
+	       If there are two beans of same Address type then use property "primary=true"
+		   
+		   
+		 -> constructor:
+		      Autowiring by constructor is equivelent to byType
+			  autowire byType injects the dependency by invoking setter method.
+			  autowire by constructor autowire="constructor" injects dependency by invoking constructor.
+		 
+		 -> none
+	
+-> Annotations:
+
+    @Override	
+	
+	Imperactive programming style:
+	developer (What to do)--> how to do (developer)
+	
+	Declarative programming style: 
+	developer (What to do)--> how to do (by runtime)
+	
+	
+	-> An alternative way to provide configuration is using annotation..
+	-> Annotation based configuration rely on bytecode.
+	-> instead of using <bean>, <property>, <constructor-arg>  elements to define bean or inject dependencies, we move this configuration to
+	-> Configuration information to detect annotations  should be provided in the xml configuration file..
+	
+	
+	Types of annotations:
+	
+	
+	   1. Spring standard annotation: @Value, @Autowired etc..
+	   2. JSR250: @Resource, @PreDestroy, @PostConstruct etc..
+	   3. JSR330: @Inject, @Named, @Singleton etc..
+	   4. Stereo type annotations:
+	   
+	         @Component, @Repository, @Service, @Controller, @RestController, @ControllerAdvise and @Configuration.
+	
+	        -> Stereotype annotations are used to mark classes so that class can be scanned by spring container and after scanning container will create the instance  of the same class  and manage the instance as spring bean.
+			
+			@Component
+			public class Student{
+			
+			}
+			
+			
+			1. @Component: indicates that an annotated class is a spring component.
+			2. @Service: specialization of @Component for service layer
+			3. @Repository: specialization of @Component for persistence or dao layer.
+			4. @Controller : specialization of @Component for web layer.
+			
+			
+	Note: annotations are not replacement of xml configuration. They help in configuring the beans by wirting lesser xml code..
+
+
+-> How to enable annotations:
+
+   	-> <context:annotation-config>: activates annotation to be detected  in bean classes for a registered bean. @Required, @Autowired, JSR250, @Resource.....
+	
+	-> <context:component-scan> extends <context:annotation-config> :  it scans the packages to register bean as well as detect dependencies.
+	
+	   <context:component-scan base-package="com.accenture.lkm">
+	   
+-> @Value: assign values to fields  and method arguments ...
+
+        @Value("#{expression}")	  
+		
+		@Value("1000")
+		
+		
+-> Some more standard annotations:   @Autowired,  @Qualifier, @Scope, @Bean, @Primary
+
+                                @PostConstruct : method can be annotate using this annotation, that should be executed after dependency injection is done.
+								
+								@PreDestroy : execute method before bean is destroyed..
+								
+-> Spring Expression Language(SpEL):
+
+
+     #{expression}								
+	 
+	 
+	 
+-> Profile:
+
+
+     -> Profile were introduced  from spring 3.1.
+      -> Enables the developer to load different set of classes  for different project environment (dev, prod, test).
+     -> @Profile annotation is used at class level  to perform selective loading of the classes based on environment.
+
+
+      EMP project{
+	  
+	      @Profile("prod")
+	      EmployeeDAO.java---> actual prod DB ( if i execute my project in production env)
+		  
+		  @Profile("dev")
+		  EmployeeDAODev.java---> local DB (if i execute my project in the development env)
+	  
+	  }	 
+	  
+	  
+	  
+	  Activate profile by setting system property:
+	  
+	   1. System.setProperty("spring.profiles.active", "prod")
+	   
+	   
+	   2. right click on the project--> RunConfiguration--> Environment tab--> click NEW--> set name=  spring.profiles.active, value=deve or prod 
+	   
+	   
+-> @Autowired annotation:
+
+
+     1. @Autowired is used to inject references and autowire an other bean.
+     2. @Autowired can be used on Field, setter (setter injection), constructor (constructor injection) , you can use it on any other methods.	 
+	 
+	 @Autowired  // eliminates the need of setter method
+	 private Address address;
+	 
+	 @Autowired // setter injection(
+	 public void setAddress(Address address){}
+	 
+	 @Autowired // constructor injection
+	 public Employee(Address address){}
+	   
+    -> @Autowired(required=false/true): dependency is optional if false or mandatory if true.	   
+	   
+-> @Autowired  - Static variables and methods:
+
+                 Autowired annotation cannot be used on static variables and static methods..
+
+
+     Note: When we use @Autowired annotation to inject depdencies then Spring container injets depdencies at runtime when creating an instance of a bean.... Since static members are not tied up or doesn't belong to instance/object of a class , spring can not inject depdencies into static fields or methods in the same way.	
+
+
+
+-> @Qualifier annotation:
+primary=true	 
+
+    -> Qualifier annotation resolves ambiguity if there are more than one bean of same type  to be injected.
+	-> Qualifier can be used on field, method, constructor...
+	
+	
+-> Reading Properties File in Spring application:
+
+    -> It is not good practice to hard code the data/values in the classes...	
+	->  if data has to be changed  then developer has to change the source code.
+	-> To avoid this, data has to be externalized in a properties file and spring has to read this properties and provide data to employee class. 
+	
+	@Value("${employeeId}") - ${} indicates placeholder
+	
+	@Value("#{expression}") - #{} spring expression language
+	
+	Steps to externalize properties:
+	
+	Step1: exteranlize properties in .properteis file as key/value
+	
+	Step2: configure below bean(1) or add element (2)
+	
+	1. PropertySourcesPlaceholderConfigurer bean: replace ${key} after bean definition are read/loaded but before spring container creates the instances..
+	
+	     or 
+		 
+	2.  <context:property-placeholder location="files, files">
+	
+	    for example: <context:property-placeholder 
+	    location="properties/employee.properties,
+	    properties/address.properties"/>
+		
+		
+	Step3: add placeholders in your bean classes using syntax : ${key}	
+	
+	
+-> Java Configuration:
+
+    -> Java based configuration was added from spring 3.0.
+    -> Java configuration is replacement for XML based configuration. Beans are defined using java configurationinstead of of xml configuration.
+    -> Core annotations in java configuration are :
+
+        1. @Configuration:  it is used to declare a java class  as Spring configuration.
+        2. @Bean =====<bean> : it is used to replace <bean> tag of the xml configuration.	
+        3. @ComponentScan :  it is equivelent to <context:component-scan> : enables annotations and scan stereotype annotations.
+
+    -> any xml configuration can be written in form java configuration..
+    -> Java is faster than xml based configuration as using XML configuration following additional steps need to be performed by the spring container before creating and managing instances of classes:
+
+          1. Container has to read/load the xml	
+		  2. Container has to parse/validate
+          3. Container has to convert /locate the required classes         
+          4. Create the instance/bean of the class		   
+		  
+		  @Import : import is used to import other configuration into the current configuration class.
+		  @PropertySource : it is used to point and load the files..
+		  
+		  
+-> Lazy intialization using xml:
+
+
+    -> Spring container by default , creates  immediately /eagerly after it loads  and then reads the configuration..		  
+	-> Bean can be marked  as lazy so that they are not created eagerly when conainer loads the configuration.
+	-> Lazy bean are created  by the container and managed for further use only when they are accessed by the program first time.
+	-> To mark a bean for lazy initialization , use "lazy-init=true" at bean bean level in xml configuration file.
+	
+	
+	Note: lazy-init= true: does not effect if the bean takes part in autowiring..
+	
+	
+-> BeanFactoryPostProcessor and BeanPostProcessor:
+
+                        PropertyPlaceHoldrerConfigurer
+xml(employee bean)---> loading---> BeanFactoryPostProcessor(modify bean definition) ----> initialize employee bean  ------> BeanPostProcessor	 
+
+
+   -> BeanFactoryPostProcessor: This interface allows  custom modification of the bean definition. you can use this interface to modify(alter or add) definition of a bean programmatically ..
+   
+   
+   InitializingBean (afterPropertiesSet()),DisposableBean(destroy)
+         or
+	@PostConstruct and @PreDestroy	
+
+         or
+   myInit() and destroy() you can configure in bean definition in xml configuration..		 
+   <bean id="employee" class="com.accenture.lkm.business.bean.Employee" 
+ 		init-method="myInit" destroy-method="myDestroy">
+		
+		
+		
+-> Spring Test:
+------------------
+
+
+   -> Testing is important part of software development life cycle.
+   -> Testing is done using testing frameworks like junit, testng etc....
+   
+
+		integration of spring with junit or testng or etc..
+		
+		
+  Spring Test annotations:
+
+      Spring framework provides support for testing in the spring-test module.
+      Few important annotations offered by spring-test module:
+
+       1. @ContextConfiguration: It is used to indicate the custom location of spring configuration file xml/java. Default location of the file is in the same directory of test class with default "classname-context.xml"
+	   
+	   2. @DirtiesContext:
+	   
+	        Using spring test ApplicationContext is cached and loaded only once for all the test cases. In order to load ApplicationContext once again , old copy of ApplicationContext has to be closed first. @DiretiesContext is used to configure the ApplicationContext  closure.
+			
+			It has modes :
+			
+			        BEFORE_METHOD : it is method level annotation, used to refresh context before execution of test case..
+					AFTER_METHOD : it is method level annotation and used to refresh context after execution of method.
+                    BEFORE_CLASS
+                    AFTER_CLASS					
+
+           	When to use @DirtiesContext:
+
+                Stateful Beans:    if any test case modifies a bean (employee)  that maintain state(name, id, salary) such an in-memory database as singleton bean, @DirtiesContext can ensure these modification do not carry over other testes cases..			
+				
+	     3. @ActiveProfiles			
+				
+		    1. 	System.setProperty("spring.profiles.active", "dev"); 
+            2. run configuration  
+			3. Activate profile in testing environment using @ActiveProfiles annotation.
+          			
+		 4. @Transactional annotation:  
+
+                Is is used to run every test case method in a transaction	, with default strategy of rollback.. it can be placed at method level and at class level.
+
+         5. @Rollback:  it is used to configure the default rollback starategy , it can come at method level or class level.				
+		 
+		 
+		 
+-> JSR330 and JSR250 annotations:
+
+
+      1. JSR stands Java Service Request. These reuqests are created and serviced to include a feature  in new release of java..	
+	  2. Under JSR330, dependency injection for java was introduced and Spring framework suports these annotation(JSR330)  from spring 3.x version.
+	  3. Under JSR3303, we have annotations like @Inject, @Named, @Singleton..
+	  4. @Inject is used for injecting dependencies...it is similar @Autowired(required =false/true) but the dependency configurd using @Inject annotation always required.
+	  
+	      @Inject = @Autowired(required=true)
+		  
+	  5. @Inject annotation can be plaed at method/field/constructor like @Autowired.
+      6. @Named("employee") is similar to @Component("employee"). When @Named is used inside spring container  then scope of dependency is configured as Singleton.. 
+	  
+	   For other framework scope of @Named will be prototype.
+	   
+	  7. @Singleton : is used to configure the dependencies in Singleton scope... 
+	  
+-> JSR250 annotations:
+
+      -> @Resource is similar to @Autowired:
+             	   @Resource is always required
+                   @Resource can not be used at constructor level. if it is used at constructor level then it will throw compilation error.				   
+				   
+				   
+-> Day3:				   
+-------------------------------------
+
+
+-> Spring ORM/JPA:
+
+
+    What is ORM: It is a concept or technique and that allows developers to interact with a data using an OOPS and perform CRUD operations.
+	
+	What is JPA: But java standard for ORM (how to map java object to RDMS tables and manage the persistence of those java objects.). JPA is just a specification (set of rules).
+	
+	JPA implementation provider:  There are some popular or widely used jpa implementation provider like Hibernate, EclipseLink, TopLinks, iBatis, OpenJPA..
+	
+	And Providers, provides actual ORM functionality based on JPA specification...
+	
+	
+	-> Spring framework supports integration with following backend API:
+	
+	   -> JDBC
+	   -> JPA (using different like Hibernate or other providers)
+	   -> Hibernate Framework..
+	
+Benefits of Spring ORM:
+
+     -> Datasource managemnt:
+	 
+	      Spring manages connection to batabase by using Datasource, which allows to swap  datacourse b/w production and test environment..
+		  
+    -> Exception handling: Spring ORM wraps the exception using only single class DataAccessException (unchecked exception) and This makes the programming model more consistent and uniform.
+
+    -> Transaction Management: Spring ORM offered declarative transaction management, using annotation based approach @Transactional  and this leads to reduction in boiler plate for creating, managing, commit/rollback  the transactions.
+
+
+    -> Resource management:  Spring ORM handles the configuration and creation of persistence resources.  EntityManagerFactory... further these resource can pluggned in by using variety of data sources..
+
+    
+
+    -> Spring ORM has classes under the package org.springfraework.orm.jpa	
+	
+	In JPA:
+
+         EntityManagerFactory----> programmatically connection with DB    
+         EntityManager---> Perform CRUD operations    
+         Entity class: persistable class..	
+
+
+    In ORM :  we will use LocalContainerEntityManagerFactoryBean to create programattic connection with DB	:
+
+              -> It gives complete and finegrained control over the creation of JPA specific EntityManagerFactory..	
+			  -> Gives support for Transaction management.
+			  -> Due to complete and fine grained control over the creation of JPA specific EMF ..it is suitable for UNIT testing  and integration testing..
+			  
+			  
+			  
+	Spring ORM configuration :
+
+      1. Connection.properties file (DB url, DB name, username, password )
+      2. PropertyPlaceHoldrerConfigurer	: Reading connection information from properties file
+	  3. Datasource bean: Pointing to DB properties
+	  4. LocalContainerEntityManagerFactoryBean (plugin Datasource bean in this EMF bean, Hibernate vendor adaptor bean to provider hibernate specfic properties..) 
+	  
+	  
+	            DTO ( bean)                   DTO (bean)      (DTO <---> DAO(entity))
+	  UI tester<---------->   Service layer<----------------> DAO <--------------------------> DB
+	  
+	   -> Transaction Manager Implementation:
+	   
+	        Remove bolier plate code: like 
+			
+			   every time EntityManager has to be created
+			   Every time Transaction has to begin and commmit. 
+	   
+	         Sprin ORM config xml contain following beans:
+			 
+	  1. Connection.properties file (DB url, DB name, username, password )
+      2. PropertyPlaceHoldrerConfigurer	: Reading connection information from properties file
+	  3. Datasource bean: Pointing to DB properties
+	  4. LocalContainerEntityManagerFactoryBean (plugin Datasource bean in this EMF bean, Hibernate vendor adaptor bean to provider hibernate specfic properties..) 
+	  5. <bean id="txManager" class="org.springframework.orm.jpa.JpaTransactionManager"> 
+		      <property name="entityManagerFactory" ref="cst_entityManagerFactory" />
+	     </bean>
+	
+	     txManager is custom name. Default name for transaction manager "transactionManager"
+		 
+	   6. <tx:annotation-driven transaction-manager="txManager"/>	 : enable @Transactional annotation support..	 
+	   
+	   
+	   
+	   PersistenceContext is a cache area to manage all the entities.
+	                          Live
+	   PersistenceContext-----------------> Database
+	   
+	   
+	   When we create object of EntityManager------------> Persistence context created
+	   
+	   EntityManager----------> PS[]
+em.persist(entity)--------> PS[entity(1001)]------> when commit----------> Database[entity(1001)]
+
+em.find(1001)------> PS[Entity(1001)]--------------> not hitting DB
+
+em.close()// persistence context closed 
+
+
+@PersistenceContext Vs. @Autowired:
+--------------------------------------------
+
+-> @PersistenceContext:
+    -> Injects an EntityManager
+	-> Belongs to JPA and specifically used in JPA context..
+	-> Manages the lifecycle of the EntityManager which is used to inreract with PC..(CRUD operations)
+	
+-> @Autowired:
+
+    -> Injects any spring managed bean as dependency
+    -> It belongs to Spring framework and it is a general purpose annotation used for DI in spring.
+    -> We can use it to inject service, repositories and configuration etc..	
+	
+
+@Transactional annotation:
+
+     -> it belongs to Spring framework.
+	 -> It can be placed at class level, interface and method level..method and class level are more prefferd options.
+	 -> @Transaction(Isolation = Isolation.READ_COMMIT) : This annotation defines the Transaction Metadata to be given to transaction manager.
+	 
+	 -> When @Transactional comes at class level  than before executing any method of the class , spring container automatically begins a transaction  and after succesful execution of the method commits the transaction..
+	 
+	 
+-> Switch datasources using @PersistenceContext:
+
+
+     1. Create two datacourse (create one saperate configuration file for datacoures)	
+
+          Datasource1 (for DB1)
+          Datasource2  (for DB2)
+
+     2. in jpa configuration file:
+        
+         EntitManagerFactory1 (inject Datasource1)	
+         EntitManagerFactory1 (inject Datasource2)	
+
+     3. JpaTransactionManager (EntitManagerFactory1)	
+        JpaTransactionManager (EntitManagerFactory2)	
+
+     4. In DAO layer inject any one or both the EntityManager
+
+         @PersistenceContext(unitName="EntitManagerFactory1")
+         EntityManager entityManager1;	 
+		 
+		 @PersistenceContext(unitName="EntitManagerFactory2")
+         EntityManager entityManager1;	 
+		 
+		 
+-> Types of PersistenceContext:
+
+      -> Container managed EntityManager is created using @PersistenceContext
+	  -> EntityManager  has folowign type of persistence context.
+	  
+	      1. Transactional scoped Persistence context.
+		  
+		         In case of container manager EntityManager, For every method call a new transaction  begins and a PersistenceContext is created. Same PersistenceContext is used until the method execution is completed. As soon as method execution completes , transaction also completes and PersistenceContext destroyed..
+
+             Method execuion begin     --->    Transaction begin ---> PC created    
+			 method execution compltes --->	 Transaction commit---> PC destroyed.
+				 
+		  2. Extended Scoped Persistence Context:
+		  
+		      If the state of Entity is to be shared acrosss Transactions  and method call then , Extended persistence context is used.. PersistenceContext is created  for first method call  and transaction ..method calls and transactions done later share the same PersistenceContext.
+			  
+			  getEmployeeDetails starts---> Tranaction begin-----> PC created
+              getEmployeeDetails ends----> Transaction completes----> PC extended	
+
+             Note: Extended persistence context closed when EntitManager instance is closed by close() method.			  
+
+                 		  
+-> @Transactional MetaData:
+
+    -> @Transactional annotation is used to give metadata  to Transaction manager  to perform transaction management.
+	
+	-> Attribute or metadata or properties are below:
+
+       1. Propagation : propagation default value is "PROPAGATION_REQUIRED"	
+	   2. Isolation level: default value for isolation is "ISOLATION_DEFAULT"
+       3. Transaction in read/write. :  read = true
+       4. transaction timeout:  defaults to the default timeout of the underlying trnasaction system.
+       5. Rollback : rollback is triggerd by RuneTimeexception and not for checked exception..	   
+
+     		 
+		@Transactional(propagation = propagation.REQUIRED,
+		               isolation = Isolation.READ_COMMITED, //  Isolation.READ_UNCOMMITED
+					   timeout=30,
+					   readOnly=false,
+					   rollbackFor={Exception.class},
+					   noRollbackFor={RuntimeException.class})	 
+		public void myTransaction(){}	 
+		
+		
+-> Transaction Propagation:
+
+	  -> Certain transactions might be complex  due to business needs. For example: As soon as Department is created a default Employee should be created for the Department.	
+	  
+	  -> In order to complete above requirement , we need to perform two DML operation and rspective transactions.
+	  
+	  -> Problem statement: If one of the transaction fails, it will rollback itself, but it can not rollbackthe other related transaction ..for example:
+	  
+	      transaction for creation of employee is rollback but not the transaction for creating department.. This causes the business operation/business transaction pratially complete which goes against the principle of Atomicity.
+		  
+		  
+		  Solutions: 
+		  
+		   For such complex transactions, it is good to follow some points:
+		   
+		       1. Split the single transaction into smaller logical transaction.. 
+			   2. Physical transaction can be started at the service layer  using @Transactional
+			   
+			        single (create deparment and create employee)
+					
+					@Transactional // physical transaction
+					public void addDepartmentAndEmployee(){}
+					
+			   3. Logical transaction can be started  at dao layer or database layer.
+                      
+                     createDepartment(){}    (@Transactional ) // 1. logical transaction`
+					
+                     createEmployee(){}      (@Transactional) // 2. logical transaction
+					 
+               4. 	Logical transactions can share same transactioal scope  with the physical transaction so that  when one logical transaction is rolled back  then it rolls back the phyisical transaction  there by all the other related logical transaction are also rolledback..		
+			   
+			   5. Logical transactions can have the independent transactional scope , so that  rollback of the one logical transaction should not hinder  any other logical transaction./ physical transaction..
+
+          			   
+Transaction Propagation: controls sharing of transaction scope of the physical transaction in service layer  with Logical transaction in DAO layer.
+     in other words it controls whether the transactional scope should be shared /progated b/w physical and Logical transaction.. 
+
+
+Types of propagation:
+
+         1. Mandatory
+         2. Nested
+         3. Never
+		 4. NOT_Supported
+		 5. Required
+		 6. Requires_new
+		 7. Supports
+		 
+		 Majorly used transaction scope are : Required and Requires_new
+
+
+-> Required propagation:
+
+      -> this is default propagation level..
+      -> Placing @Transactional(propagation = Propagation.REQUIRED)	on a transactional method that implies following:
+
+            1. For a method begin new transaction only if it does not exist already	  
+			2. If method is invoked from another method  and a transaction exists then same transaction is used ..
+			3. Using this type of propagation , physical transaction(service layer)  and all the related logical transaction(DAO layer) share the same transactional scope.
+			4. RuntimeException thrown by any one of the logical transaction, will cause the physical transaction rollback.. all the other related logical transactions sharing the same transactional scope are also rolled back.
+         		 
+				 
+				 CreateDepartment thowring Runtimeexception then createEmployee transaction also must be rolled back.
+				 
+	-> If any of the transaction is throwing checked exception:
+
+          1. For @Transactional annotation, by default rollback is triggerd for unchecked/runtime exception..	
+		  2. In order to to trigger rollback for checked exception , rollback strategy has to be custom configured  on the method involed in logical transaction and physical transaction.
+		  
+		  How to custom configure rollback strategy for checked exception using "rollbackFor" attribute.
+		  
+->	Propagation.Requires_New:
+
+      -> In this type of propagation @Transactional will make the logical transaction/method and physical transaction work in independent scope...
+      -> Rollback done on the logical transaction @Transactional(Propagation=propagation.requires_new), will not impact the physical  transaction and other related logical transaction due to non- shared transactioal scope..	 
+
+      refer demo number 13 for this propagation...	  
+	  
+	  
+-> Day4	  
+--------
+
+
+-> Spring Data JPA:
+
+
+     -> Spring ORM/JPA has alot of boiler plate code :
+	 
+	     1. Writing DAO classes
+		  2. Writing methods to perform CRUD operations
+		 3. Creating Queries (JPQL)
+		 4. Writing logic for pagination and auditing
+		 
+		 
+	-> Spring Data JPA:
+
+         1. Its a lib/module/framework that adds a extra layer of abstraction on the top of JPA provider.
+         2. It is not provider.
+         3. Spring Data JPA eliminates boiler plate code by RAF..
+         4. Implementing the DAO layer involves having an interface  which extends from Spring spring JPA data repository interfaces..
+          
+           public EmployeeDAO extends CrudRepository<EmployeeEntity.class, ID> {}	
+
+         5. DAO(EmployeeDAO) interface	is implemented at runtime by runtime code in memory.
+         6. For the runtime code a proxy object  is created and injected  to the code (service layer / wrapper class) and later same object  used to perform  the CRUD operations and transactions..	 
+		 
+		 
+		 -> Repository<EmployeeEntity.class, ID> : its marker interface
+         -> CrudRepository<EmployeeEntity.class, ID>: this interface provide basic CRUD operations  
+         ->	PagingAndSoringRepository<EmployeeEntity.class, ID>: to declare the entities that are used to sort  and paginate entities.. 
+		 
+		     above 3 interfaces are part of spring-data-commons lib.
+		 -> JpaRepository<EmployeeEntity.class, ID>:  This interface combines all the methods of the interfaces discuss above..
+		 
+		      JpaRepository interface is part of Spring-data-jpa lib.
+		 
+		 
+		 Steps to implement Spring Data JPA:
+		 
+		   1. Check if required lib available or not if not avail then add them in classpath.
+		   2. Enable JPA repositories:
+		     <jpa:repositories base-package="com.accenture.lkm.dao" 
+			transaction-manager-ref="txManager" entity-manager-factory-ref="cst_entityManagerFactory"></jpa:repositories>
+			
+			  or if java config:
+			  
+			  @EnableJpaRepositories(basePackages= "com.accenture.lkm.dao" ,transactionManagerRef="txManager",
+              entityManagerFactoryRef="cst_entityManagerFactory")
+			
+		   3. Implement repositories using custom interface..	
+			
+			  public EmployeeDAO extends CrudRepository<EmployeeEntity.class, ID> {}	
+			  
+			  
+			  Flow of execution (demo1 and demo2):
+			          DTO            DTO     (DTO(Bean)<---> DAO(Entity))
+			    Tester<----> Service<-----> DAO<---------------------------> DB
+				
+				
+				Where to keep conversion methods (entity to bean  or viseversa) as we have interface in spring data jpa.
+				
+				Solution: EmployeeDAOWrapper class (add conversion methods in this class and inject employeeDAO bean in this clas..)
+				
+	 DTO           DTO           DTO<----> DAO  			
+Tester<----> Service<----->EmployeeDAOWrapper<------> DAO<---------------------------> DB
+
+ refer demo number 3 and 4
+ 
+-> Customizing Standard Repositories :
+
+     Using  @RepositoryDefinition
+
+     -> Extending CrudRepositorywill provide the complete set of methods  available for entity manipulation.
+     -> Customization to expose selected methods(save(), findById()),  in the interface can be achieved using @RepositoryDefinition. 	 
+	 
+	  refer demo number 5
+	  
+	  
+-> Query Method Approach:
+
+
+     select * from employee where employee.salary =50000;	 
+
+     -> Using this technique method signature itslef is converted into a query(jpql).
+        
+         	
+	 -> Method names should b created  using standard keywords as above.	
+
+         findBySalaryGreaterThanEqualAndRole(Double param1, String param2)	
+
+
+         Spring Data Jpa will convert above method signature into JPQL:
+
+          select k from EmployeeEntity k where k.salary >=param1 and k.role=param2		 
+		  
+		  refer demo number 6
+		  
+		  
+-> Writing Queries  in Spring Data JPA:
+
+
+      In JPA we have some annotation  :
+	      @NamedQuery
+		  @NamedQueries = {@NamedQuery, @NamedQuery , @NamedQuery}
+		  
+	  In Spring data JPA we have @Query annotation which is alternative to the @NamedQuery.	  
+
+      Using @Query annotation we can bind the query directly to the method whch executes them.		  
+	  refer demo number 7
+	  
+-> 	 Externalize Queries using ORMXML:
+
+      To externalize queries, create Met-INF folder withing the /SRC and create orm.xml file and place al the queries in this xml file..
+      refer demo number 8
+
+-> @Modifying annotation:  
+
+     @Query
+     @Modifying	 
+	 
+	 refer demo number 9
+	 
+	 
+-> Introduction to Spring MVC:
+-------------------------------
+
+
+    -> MVC architecture or MVC design pattern:  Stands Model , View, Controller
+	-> It consistes 3 modules:
+	
+	    1. Model: It represents the POJO, business logic, database logic of the application..
+		2. View: this is responsible to generate/select teh UI and present data  to the end user.
+		3. Controller: It intercepts all the request sent to the application and updates the changes to view (jsp)
+	 http://localhost:8080/appname/index.html
+	        index.html
+	 Client-------------> webServer----> file system[index.html]------------> response to client
+	 
+	        welcomeServlet                                          not available
+	 Client-------------> webServer----> file system[welcomeServlet]------------> forward request to the container[welcomeServlet]----->container will reads web.xml ----->initialize welcomeServlet [servlet will process request]-------> send response to the client
+	 
+	  refer demo number 10000
+	  
+-> Spring MVC flow:
+
+       Model--> EmployeeBean
+       View---> JSP	
+       Controller:   
+            1. Frontend controller (DispatcherServler)----> will intercepts all incoming request
+            2. Backend controller: DS will forward request to backend controller to process request	
+
+        How to create backend controllers: a class which is annotate using @Controller is called backed end controller. 	
+
+
+     dservletname-servlet.xml	
+     cstspconf-web-servlet.xml	 (spring configuration naming convention) 
+	 
+	 DS will create webApplicationContext container  (console ApplicationContext)
+	 WebApplicationContext: is specialied version of ApplicationContext  and that is used in Web applications.
+	 @RequestParam: to extract parameters from request.
+	 @RequestMapping: is used to map HTTP request  to the request handler method in backend controller. can we used at class level or method level..
+	 
+	 
+-> Context Configuration:
+
+     Is used to locate the Spring configuration(context from location other than the default/standard location. and with name other than the standard naming convention.)	 
+	 
+	 
+	 refer demo number 10003
+	 
+	 
+->	Context Hierarchy:
+
+     There are two types WebAplicationContexts:
+
+     1. Root/Parent WebAplicationContext:
+	 
+	    1. Belongs to the complete spring MVC application...
+		2. It is good to configure commmon spring beans/backend beans in the Root WebApplicationContext.
+		3. In an application there can be only one Root WebApplicationContext.
+
+
+     2. Child/Servlet WebApplicationContext:
+
+        1. Belongs to the DispatcherServlet
+        2. A spring MVC application can have multiple  servlet/child WebApplicationContext.
+        3. It is good practice to configure the presentation layer component like Controllers, view resolvers in the servet context.. 
+
+         Servlet context for end user with mapping user/login.html      
+         Servlet context for admin with mapping admin/adminLogin.htm		 
+		 
+	Note: all the beans configured in root web applicationContext are accessible in child context:	
+
+
+    ContextLoaderListener:    Is used to inialize root WebApplicationContext when the web application starts.	
+	
+	
+-> ViewResolver:
+
+    1. In backend controller , all the request handler methods should return the logical view name by returning String, View or ModelAndView.
+	2. Logical view  names are mapped to actuall view (.jsp, .html, template based) by the ViewResolve
+       succcess-----> ViewResolver----------> prefix/success.suffix 
+    	prefix is folder location/path
+		suffix is extension of view technology.
+		
+		success-----> ViewResolver----------> jspView/success.jsp 
+		
+		-> InternalResourceViewResolver
+		
+		
+-> Spring Form and Form elements:
+
+      -> JSP is one of the view technology used with Spring MVC.
+      -> Spring MVC provides a tag library to generate a variety of UI components.Tag library can be included in jsp page using jsp tag directive
+
+       <%@ taglib uri="/tag/forms" prefix="form" %>
+
+       Tag lib provides following UI components:
+
+        button, checkbox (static and dynamic), errors, form, hidden, , input , label , options (static and dynamic) , password, radiobutton(static and dynamic), select, textarea.
+
+-> 	Spring @ModelAttribute as Parameter:
+
+      1. Spring form tag is used to bind the form components to the model object exposed by the controller.
+	  2. Spring form uses Spring Model to access and submit data to the @Controller.
+	  3. @ModelAttribute is used to access Spring model in the Controller..
+	  
+	  4. @ModelAttribute can be placed  at following levels in a @Controller:
+	  
+	      1. Place @ModelAttribute as method parameter:
+		      It is used to bind the form data  with a java bean or java object..
+		      
+	      2. Place at method level
+
+
+-> Static form components:
+
+   These are components where values and labels  are hard coded on the view..
+    <form:form modelAttribute="employeeBean">
+
+    modelAttribute : form tag binds the form to the employeeBean object..the modelAttribute="employeeBean" , specifies that the form fields should be populate from the employeeBean in the model.	
+	
+	refer demo number 10008
+-> Dynamic UI components:
+
+       1. These are components where values and labels  are ret from database thru backendcontroller, service and dao..	
+	   
+	   2. Spring Model is populated with values and labels using @ModelAttribute annotation at the method level.
+	   
+	   3. All the methods marked with the @ModelAttribute are executed first or before any request handler method  marked with @RequestMapping or the controller..
+	   
+	   4. After the view is displayed then it takes the values from Spring Model and UI components are displayed with the dynamic values..
+	   
+	   refer demo number 10009
+	   
+-> Spring Model Vs Request Scope:
+
+    refer demo number 10010	   
+	
+-> Spring Form Validations:
+
+    1. Validations are required to improve quality of the data that is processed and stored by an application..
+    2. Spring MVC has vast set of validations that are classified under following categories:
+
+         -> JSR 303 (Bean validation API (current standard))
+         -> validator interface with initbinder (old standard and less prefferd)	
+
+    3. Stadard validation annotation are avail to validate data.
+    4. Custom validation: to fulfil some spcific business needs.	
+	
+	
+	@NotNull
+	private Strong empName;
+	
+	
+	@NotNull(number) : we can use this annotation with number like integer
+	@NotEmpty(String): (including whitespace)
+	@NotBlank(String): (user has to enter some values excluding whitespaces)
+	
+	Steps to implement validation in spring form:
+
+       Step1: add required lib (bean validation, hibernate validator and spring )
+       Step2: add required annotation in the bean class at field level	   
+	   Step3: to trigger validations, add @Valid in request handler as parameter to validate bean.
+	   Step4: Add one more prameter BindingResult object as param in the method:
+	   
+	           BindingResult is injected by framework, it is used to check  for validation failure  if any validation fails stay back on the same page else navigate to success.
+	   Step5:  use result.hasErrors() method to check if theere is any  validation failure		   
+	   
+	   Step6: use <form:errors> tag to display validation failure messages to end user ..
+	   
+	   
+	   If external error message in properties file:
+	   
+	   Step7: create external .properteis file and add messages.
+	   Step8 : to load external properteis messages , configure org.springframework.context.support.ReloadableResourceBundleMessageSource in child/servlet context.
+	   
+	    refer demo number 10011
+-> Custom Validations:
+
+    Following are the steps to create custom validations:
+
+        Step1: Create the annotation:
+		
+		      @interface we used to create annotation in java..
+        Step2: Create the validator class
+        Step3 : Link annotation with validator(step2)
+        Step4 : use the annotation in the bean class at field level.
+
+
+Explanation about Custom validation:
+-----------------------------------------------
+		 
+		 Need of custom validation annotation?
+
+If available constraints / annotations do not fulfill our business needs in that case we might want to create our custom validation.
+
+
+Step1: Create a custom constraint annotation: We have defined custom constraint annotation.
+
+
+@Target({ElementType.FIELD, ElementType.METHOD}): 
+
+it is part of java.lang package
+
+It is used to define the scope of an annotation that means you can control where an annotation can be used in your code. so FIELD and METHOD indicates that the annotation can be applied to fields and methods.
+
+The @Target annotation takes an array of ElementType as its argument, where ElementType is an enum that defines the different types of program element declarations.
+
+
+
+@Retention(RetentionPolicy.RUNTIME):
+
+it is part of java.lang package
+
+used to indicate how long annotations with a specific type should be retained that means
+@Retention annotation allows you to specify when the annotations should be available during compile time or during runtime.
+
+RetentionPolicy.RUNTIME:
+
+This retention policy is necessary if you need to access the annotations programmatically during the execution of your program.
+
+
+@Constraint(validatedBy = CustomValidator.class):
+
+This annotatio is the part of Java Bean Validation API.
+
+and use to create custom validations.
+
+Using this annotation, you can associate custom annotation with a validator class (where you specifies custom validation logic.)
+
+
+@Interface annotation: is used to define custom annotation in java.
+
+In java we pass some metadata thru annotations that means we can add annotations in java code and can pass some additional information to the compiler or to the runtime.
+
+Payload interface: its a marker interface  that is used in custom constraint annotations. That does not have any method and  allows you to attach additional information (payload) to a constraint violation.
+
+which can be useful in scenarios where you need to convey more details about the nature of the validation failure.
+
+
+
+Step2: Create a custom validator implementing ConstraintValidator:
+
+ConstraintValidator interface : 
+
+is the part of java bean validation api.
+
+Using this interface , you can define business logic to validate constaint and can map this validator with custom annotation.
+
+The initialize() method is called during the initialization of the validator. You can use it to perform any setup that your validation logic might need.
+
+
+
+The isValid() method contains your custom validation logic. It receives the value to be validated and a ConstraintValidatorContext that can be used to add custom error messages or perform other context-specific operations.
+
+Step3: link custom annotation with constraint validator class.
+
+Step4:
+
+      Use the custom validation annotation in your model or bean class at field level:
+
+Step5:
+
+   Trigger validation in your application using @Valid annotation in controller class.
+		
+   Refer demo bumber 10012
+   
+   
+   
+-> InitBinder:
+
+      Its an annotation  which is used to "customize" the binding of request paramters   to java object "employeeBean". We can use initbinder for data conversion, formatting of data and validation.. 
+	  
+	  
+-> Exception Handlers:
+
+     -> Exceptions are runtime errors that can be arised due to improper implementation of the business requirement.
+	 -> refer demo number 10014 (what is the need of ExceptionHandlers in Spring MVC)
+	 
+	 Use of @ExceptionHandler annotation to handle exceptions and display custom error page to the end user.
+	 
+	 Spring MVC provides @ExceptionHandler to handle the errors and redirect to the error page(custom error page).
+	 
+	 refer demo number 10015 for @ExceptionHandlers (refer controller)
+	 
+	 
+-> Global Exception Handler:
+
+       We can create global exception handler for the application using @ControllerAdvise annotation. 
+
+       -> @ControllerAdvice is a specialization of @Component.
+       -> This annotation allows you to write global exception handler that can be applied across multiple controllers..and typically used to handle exception. 	   
+	 
+	   refer demo number 10016
+	   
+	   
+-> Session Attribute:
+
+      	   1. refer demo 10017 for need of session...
+		   
+		   
+	-> If data of the first(registration.html) submission is supposed to be shared  to second submission  (confirm.html)	it can not be shared by request scope..as the request scope get refreshed during second submission..
+     -> In order to share the data across multiple submission or requests , data has to be put in the sesion scope..
+     -> Spring MVC offers the annotation "@SessionAttribute" to put data data in sesson scope..
+     -> This annotation used at class level..
+
+         @SessionAttribute("emplyeeBean")
+         public EmployeeController{} 	 
+		 
+     -> Multiple 	beans can be configured using @SessionAttributes as it accepts array of beans:
+
+         @SessionAttributes({"emplyeeBean" , "employeeBean2"})
+         public EmployeeController{} 	
+		 
+		 
+		 refer demo number 10018 for Session Attrribute
+		 
+		 
+-> Integration of Spring MVC with Spring ORM (Spring Data JPA):
+
+     refer demo number 10023 (xml configuration)
+     refer demo number 10014 (Java configuration)
+
+
+-> Spring Rest	:
+                            Product object will converted into JSON / XML
+Java application(Producer) (eCommerce application)-------------------->  XYZ ecommerce (using .NET)
+		                                         --------------------> ABC Commerce (using php)  
+        
+		  Re-represents state Product object into other MIME type (JSON or xml)
+		-> REST : stands for Representational(RE) State(S) Transfer(T).
+		
+		-> It is architectural style which is used to design web services  (RESTful), that can be consumed  from a variety of clients.
+		-> REST uses HTTP protocol to establish a interaction b/w producer(jav app) and consuemr (XYZ and ABC application) 
+		
+		
+		
+		Employee Management System:
+		
+		Employee Service (Producer)
+		                    consumes
+		Employee Service(Prodcuer)   <-----------Department service (Consumer)
+		
+		Department(producer)<-------------- Salary service(Consumer) 
+		
+		
+-> Annotations in SpringREST to create restful services:
+
+      HttpMessageConvertor class:  to convert java object to JSON/ xml or convert XML / JSON into Java object..		
+	  
+	  1. @RestController:   Specialization of @Controller to create RESTful api's;
+	  
+	  2. @ResponseBody: triggers HttpMessageConvertor  convert response java object as JSON or xml.  
+	  
+	  3. @RequestBody: Request body will triggers HttpMessageConvertor to convert request json/xml into java object...
+	  
+	  4. @PathVariable: This annotation is used to  read parameter from URL and inject the same to the handler method..
+	  
+	   http://localhost:8080/getEmployeeDetails/1000 (id)
+	   
+	   
+	      @RequestMapping(value="/getEmployeeByDetails/{id}")
+	      public ResponseEntity<EmployeeBean> getEmpById(@PathVariable("id") int id){}
+		  
+	  5. ResponseEntity Class:   
+
+            This is the return type of the request handler methods.. it is used to specify response , status code, header as well response body	  like @ResponseBody, it also trigger HttpMessageConvertor and converts the response/java objects into JSON/xml basd upon the configuration..
