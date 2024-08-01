@@ -1,0 +1,248 @@
+Day2
+Topic: Stream API,JDBC,JPA
+Date: 16/July/2024
+---------------------------------------------------------------------------------
+Java 8 features: 
+
+Paradigm programming : Imperative(what and how to do) ,Declarative(what to do) style
+Interface: achive the abstraction- contain-public final abstract methods- 
+Method body: static ,Default
+
+interface abc{
+Integer add(Integer num1,Integer num2);
+Integer sub(Integer num1,Integer num2);
+Integer div(Integer num1,Integer num2);
+
+}
+
+class Demo implements abc{
+// Implements the all methods 
+}
+
+Resolve: Single abstract method : avoid the unnecessary implementation
+
+interface abc{
+Integer calculate(Integer num1,Integer num2);
+}
+
+class Demo implements abc{
+
+@Override
+public Integer calculate(Integer num1,Integer num2){
+
+return num1+num2;
+}
+
+Anonymous class: do not have the name
+
+Help of this we can make the code more concise
+
+use when you want to use only once
+
+
+class A{
+	show();
+}
+
+class Demo {
+
+psvm(){
+	A obj=new A(){
+		public void show(){sysout("");}
+	};
+	
+}
+}
+
+FirstClass Function : passing the function as arguments to another function and returning function as the values from the other functions and assiging them to variables or storing them in data
+HigerOrder function: take one or more function as the parameters and the function returns another function as result 
+
+@FunctionalInterface: has only one abstract method
+
+lambda expression : first class function 
+
+()->{};
+
+Lambda form: with Type  inference
+			 without type inference
+			 inline lambda
+			 with return tyoe inference
+			 
+Functional Intefrace:
+
+Standard functional Intefrace:
+
+Consumer-accept,BiConsumer,Predicate-test,BiPredicate,Function-apply,BiFunction,Supplier-get(),UnaryOperator-apply,BinaryOperator
+
+Method Reference: make our code readable
+
+Replacement of lambda expression
+
+Type: To static method:  className::StaticMethodName - to call the static method of class 
+	  To a constuctor: className::new - it is used to create the object of class
+	  To instance Method: classInstance::instace method name
+	  
+Optional class: avoid the null pointer exception 
+Create the Optional :
+
+Optional.empty: It gives empty object
+Optional.of(T value): give the object with non null value- throw error
+Optional.ofNullable(T value)-give the object with non null value- create the epty object
+
+methods: 
+
+get,isPresent,orElse,orElseThrow
+----------------------------------------------------------------------------------------------
+Stream API: 
+
+Collection : the group of the object
+
+Type of the collection : 
+interface-
+
+List: Ordered collection - duplicate Elements- ArrayList,LinkedList
+Set: Unorder collection- duplication elements are not allow - hashSet,LinkedHashSet
+
+	SortedSet-Unique and sorted the elements - TreeSet
+Queue: FIFO- priority Queue
+Map: Unordered elements. It stores the elements in key and value pair - HashMap,LinkedHashMap
+
+	SortedMap-sorted keys  - TreeMap
+	
+Steam: Squence of objects which is used to process the collection objects
+
+why: For processing the collection of objects 
+
+create the stream: 
+
+using Collection stream()
+Using Stream.of(T value)
+From array using Stream.of(T .... array)
+Form array using Arrays.stream(T array)
+using Stream.empty()
+
+Primitive Streams: 
+
+Primitive type: int,long,double
+
+Primitive type stream: 
+
+IntStream int-primitive
+LongStream- long-primitive
+DoubleStream- double-primitive
+
+create the primitive stream:
+
+empty()
+of(int n)
+range(int startInclusive,int endExclusive)
+Arrays.stream(T[] array)
+
+
+Stream : Two types of stream operation 
+
+1. Intermediate Operation/ Non-terminal operation :It produce another stream as the result
+												   many intermediate operation can be pipeline together
+2. Terminal Operation: It produce the result or non stream value
+					   one maximum operation 
+					   
+Stream.of(1,5,8,3).sorted().forEach(System.out.println);
+
+Sorted()- Intemediate Operation 
+
+forEach()- Terminal Operation 
+
+Note: None of the Intemediate operations will be executed without a terminal operation at the end of stream. 
+
+List of the non terminal operation : 
+
+filter(Predicate predicate): It is an HOF which implements of predicate
+map(Function function): used to transform one type stream into another
+peek(Consumer consumer): It is used to visualize how stream is behave
+distinct(): It returning distinct elements. It used hashCode() and equals() methods to get the distinct elements
+limit(long number)- Limit the number of elements that will be extracted from stream 
+skip(long number)- It returns a new stream skipping first n elements.
+
+List of terminal Operation: 
+
+forEach(Consumer consumer): it is used to loop over the strea of elements
+toArray([IntFunction intFunction ]): It collect the elements of the stream and return array
+containing all teh elements of this stream. 
+
+HOF to which implementation of IntFunction Functional Interface
+products.toarray()
+
+Collectors collectors): Collectors object has method collect stream to List,Set,Map and collection
+also it has the calculation methods on stream  like: summingDouble().SummingInt(),SummingLong(),averageDouble()
+averageInt(),averageLong()
+
+count(): Count number of elements in stream
+
+max(Comparator comparator): get maximum value from the stream 
+min(Comparator comparator): get mi value from the stream 
+
+summarizing....(): summarizing collectors calculate a bunch of statistical calculationb like : sum,minimum,
+maximum,average of given numerical value and return these statistics encapsulated inside objects like IntSummaryStatistics,
+DoubleSummaryStatistics,LongSummaryStatistics.
+
+	summarizingInt()
+	summarizingDouble()
+	summarizingLong()
+	
+Covert stream to Map: collect the stream as Map -Method: toMap
+
+
+collect(collectors.toMap(Function keyMapper,Function ValueMapper))
+
+KeyMapper: produce the key
+valueMapper: produce the value
+mergeFunction-BinaryOperator  is used to avoid collision
+mapsupplier: create a new map  and storing the result
+
+-------------------------------------------------------------------------------------
+JDBC: Java DataBase connectivity: it is technology which can be used to communicate with database from java application
+
+Two components: 
+
+JDBC API: It provides a standard abstraction for accessing the JDBC service : java.Sql
+
+JDBC Driver: is used to connect java application to data base application 
+
+Create the connection need to follow the some of steps:
+
+1. Import the java.sql
+2. Load the Driver and Register the driver: class.forName(com.mySql.jdbc.Driver)
+3. Create the Connection: Connection conn=DriverManager.getConnection("url","username","password")
+4. Create the statement: CreateStatement,PreparedStatement
+5. Execute the Query: executeUpdate- DML operation, executeQuery()-DDL operation 
+6. ResultSet: it point the database table and for move the data one row to next we use next() method
+7. Close connection
+
+
+Persistance: store data permantly 
+
+ORM Framework : Just like a bridge between the java application and data base application 
+ORM (Object Relational Mapping) : map the java object to the database table 
+feature ORM: 
+
+Simplified the crud operation
+create the connection 
+execute the query  
+
+
+JPA- java persistance API Implimentation of ORM Framework 
+JPA uses the HibernetProvider
+
+Entity: pesistable java class this class map to the database table 
+EntityManagerFactory: is responsible for read the connection information(drivername,url,username and password) form the configuration file -Persistance.xml -META-INF folder
+EntityManager: perform the CRUD operation 
+			   EntityManager is created by the EntityManagerFactory
+			   
+Methods: 
+
+pesist(): insert data into the database
+find(Entityclassname.class,Primary key): Read the data()
+remove(): delete the data from the database
+
+
+entitymanager.persist()

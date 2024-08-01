@@ -1,0 +1,193 @@
+Day1
+Topic: Java 8 features
+Date: 15/July/2024
+------------------------------------------------------------------------------------
+Module 1: 
+
+Introduction to java
+Java Realease
+Programming Paradign
+Introduction to interface
+Anonymous class
+
+--> Objective of java pragamming language is that programs are written once and executed on any platforms. 
+
+features: 
+
+	Object-oriented programming language
+	Platform independent
+	Strongly types pragamming language
+	Atomatoc memory management
+	
+	
+Before JDK ,Imperative style and object-oriented style of pragamming.
+
+From java 8 or JDK 8 on words,java started following declarative approach. 
+
+Java Release and LTS model
+
+Oracle supports the java LTS release  as follows
+
+Java 7 through 2022
+java 8 though at leaset 2030
+java 11 through 2030
+java 17 through at 2029
+java 22.1 
+
+Programming Paradigm: 
+
+Paradigm: A programming Paradigm is a fundamental style of a programming language
+
+Common Programming paradigm include: 
+
+1. Imperative programming :  what operation to perform and how to perform the operation. 
+
+			1 to 10 
+			
+			int i=1;
+			for(i=0;i<=10;i++){
+			
+			Sop(i)
+			}
+ 
+2. Declarative programming : What operation to perform no need to expialn how to perform 
+
+ Types: 
+ 
+ Functional Programming 
+ Logical Programming
+ Mathemical Programming
+ 
+ 
+ Intefrace: It is a specification of method prototype. All the methods of the interface are public and abstract
+ 
+ It contains static final variables and abstract methods
+ 
+ public interface Demo{
+
+	public void show();
+	
+}
+
+static
+default
+
+
+Single Abstract Method: It will have only one method
+
+with help of the SAM you can avoid the unnecessary implementation 
+
+
+Anonumous Class:  A class that have vo name is known as Anonymous class. 
+
+Use: it should be used if you have to override methods of class or interface
+
+Note: Anonymous class allow us to declare and instantiate a class at the same time 
+	  Anonymous classes are used when the class is used only once
+	  Anonymous inner classes expression consist of -
+	  
+		1. The new Operator
+		2. Name of an interface to implement or a class to extend
+		3. Parenthesis that contain argument to constructor
+		4. Abody,which is class declaration 
+		
+	 Anonymous class defination is part of the statement and ended with a semicolon after closing brace. 
+First Class Function : Functions that can be treated as values . 
+					   Passing functions as arguments to other functions
+					   Returning functions as the values from other function and assigning them to variables 
+
+Higher Order Function : Functions That take another functions as arugments or return function or value 
+						The function takes one or more function as parameters.
+						The function returns another function as result. 
+						
+						
+Problem with Anonymous class :
+
+It is still imperative
+It implements dirty firstclass functionand dirty higher order function
+It cannot have explicit constructor
+Byte code is created for every anonymous class implemented
+
+Functional interface can be treated as single abstract method interface: have only one abstract method
+
+Lambda Expression: It is a First-Class Function, which are the implementation of functional interface 
+
+Syntax: (parameters)->expression
+
+					or
+		(parameters)-> {statements;}
+
+
+Lambda Forms: 
+
+1. Lambda without type inference: lambda with full signature
+2. Lambda with type inference: data type of the parameter is inferred from the interface
+3. Lambda with return type inference: return type and data is also inferred
+4. inline lambda: Lambda expression is passed as parameter to a function directly
+
+Standard Functional Intefaces: 
+
+Package: java.util.function
+
+consumer: it accept the single input and does not return any result- method- accept(Object)
+
+Predicate: It is boolean-valued functional interface and it take one arguments -method: test(object)
+
+supplier: it represents a supplier of the result. -Method-get() and return an object. 
+
+Function: It accept a single input and produces a result -method- apply(object)
+
+BiConsumer: It accept the two arguments and does not return any result- Method: accept 
+
+BiPredicate: It is boolean-valued functional interface and it take two arguments -method: test(object,object)
+
+
+BiFunctional: It accept a two input and produces a result -method- apply(object)
+
+UnaryOperator: It represents an operation on a single Operand that produces a result- method-- Function.apply(Object)
+ 
+BinaryOperator: It represents an operation on two Operand of same type that produces a result- method-- BiFunction.apply(Object,object)
+
+MethodReference: refer the demo 10005
+ 
+Optional class: avoid the null pointer exception
+
+if(object== null)
+
+method1().method2().method3()
+
+package: java.util
+
+create the Optional Object: 
+----------------------------------------
+
+Empty Optional : Gives the empty object
+--------------
+Optional<T> obj=Optional.empty();
+
+Optional<Product> obj=Optional.empty();
+
+Optional from a non-null value: It gives the Optional object with non-null value- if null value is passes
+------------------------------	it throws NullPointerException
+
+Optional<T> obj=Optional.of(T value);
+
+Optional from a nullable value:It gives Optional object with non-null value. If null value is passed then it creates optional of empty
+-------------------------------
+Methods:
+
+get(): for unwraps the actual value from Optional . If optional is empty then throws NoSuchElementException
+
+isPresent(): checks if optional contains any value. if value is present so it return true 
+
+ifPresent(Consumer<T> consumer): If value is present ,call the specified consumer by passing the unwrap value 
+
+orElse(T value): It taake one parameter. it returns the unwrapped value 
+
+orElseThrow(Supplier<T> supplier): It returns value only if it is present  else it will throw an exception created by supplier
+
+
+
+ 
+
+ 

@@ -1,0 +1,225 @@
+Day3
+Topic: JPA EntityLifeCycle,Entity Relationship,JPQL
+Date: 17/July/2024
+----------------------------------------------------------------------------------
+JDBC- Redundant code
+
+ORM - Object Relation Mapping.
+Java object is mapped to Table. Java class attributes are mapped to columns.
+
+JPA - Java Presistence API - Set of rules to implement ORM.
+
+Hibernate, Toplink, EclispeLink, ... implementations Of JPA.
+
+
+Entity - A Java class mapped to the table. @Entity - Mandatory annotation.
+@Table - Takes the table name to which entity class is mapped. Optional annotation - when entity class name and table name are same.
+@Column - Takes the column name to which mapped to entity class attribute. Optional annotation - when entity class attribute name and 	column name are same.
+@Id - Used on entity class attribute which is mapped to the primary key column. - Mandatory annotation
+
+EntityManagerFactory - Connectivity to database. Reads persistence.xml. In persistence.xml - provide daatbase information. Produces EntityManager.
+EntityManager - Methods for CRUD operation based on primary key.
+	persist() - insert a row in the table
+	remove() - deletes a row from the table based on primary key
+	find() - select a row from the table based on primary key
+	update operations - based on primary key
+Query - USed to perform operaations which are not based to primary key. Uses JPQL.
+	SQL - Structured Query Language - USes table name and columns
+	JPQL - Java Persistnece Query Language - USes Entity class name and its attributes
+EntityTransaction - commit() and rollback() - DML opeations
+
+
+
+Entity life cycle -
+1) New - Entity object is created.
+2) Managed - When persist() or find() method is invoked on Entity object. Live connection with the database.
+3) Removed - When remove() method is invoked.
+4) Detached - When entity manager is closed.
+
+Relationship between Tables/relation
+-------------------------------------
+	-> One-one : Only one instance of one entity is associated with only one instance of another entity.
+	Asset
+	Employee
+	An asset is assigned to an employee
+	An employee is holding an asset
+	
+	
+	-> One-Many:  one instances of an entity is associated with multiple instances of another entity.
+	
+	-> Many-one: Many instances of an entity is associated with single instance of another entity
+	
+	-> Many-many :  Many instances of an entity is associated with multiple instances of another entity.
+	
+
+	Implementation of Relationship/Mapping of Relationship with Entity classes
+	--------------------------------------------------------------------
+	Target Entity: Entity mapped with the parent table or having the primary key attribute referred by the Source entity
+	
+	Source Entity/owning entity/child entity : Entity that contains the reference of Target entity
+	
+	Properties of Relationship
+	---------------------------
+	Direction: It can be unidirectional and bidirectional.
+	Association between the entity instances involved in relationship can exist in one direction or in both direction.
+	
+	Unidirectional: Only one entity has a relationhip field or property that refers the other entity. 
+	
+	Bidirectional: Each entity has a relationship field or property or attribute that refers the other entity.
+	
+	
+	Casecading : Implicitly it create the chain source entity to target entity. 
+	
+	cascade operation: PERSIST,MERGE,ALL,REMOVE
+	
+	JPQL
+----------------
+
+		-> It is a query language provided by javax.persistence API.
+		
+		-> This query language can be used to perform query operations using the Entities in the application.
+		
+		-> It is also referred as OQL(Object_oriented Query language)
+		
+		-> It is quite similar to SQL DQL statement.
+		
+		-> SQL DQL statements are used to query the tables where as JPQL is used to query objects.
+		
+		-> JPQL queries are converted into SQL queries by JPQL query processor. It parse the JPQL queries to SQL Queries.
+		
+		-> JPQL are database-independent queries where SQL is database-dependent queries.
+HQL
+-----
+	-> Stands for Hibernate Query language.
+	-> Quite similar to JPQL but difference in query syntax.
+	
+
+Example of JPQL Query
+-----------------------------------------------------
+EmployeeEntity class(employeeID,employeeName, role,salary)
+
+JPQL Query: select emp from EmployeeEntity emp;
+
+emp is referenced object referring the EmployeeEntity instance.
+
+SQL DQL statement generated for the above JPQL query:select * from employee
+
+JPQL Query for fetching the selected attributes
+------------------------------------------------
+select emp.employeeId, emp.employeeName from EmployeeEntity emp;
+
+JPQL Query for fetching the particular record using where keyword
+-----------------------------------------------------------------
+select emp from EmployeeEntity emp where emp.employeeId=1001;
+
+JPQL query can be created using createQuery() method. This method accepts the JPQL query as a string parameter.
+This method returns the reference of Query interface.
+Query interface can be used to fetched the results. It similar to JDBC ResultSet interface.
+
+
+HQL Query
+--------------
+Fetching all entities instance from the database tables
+	FROM EmployeeEntity
+	
+
+
+In JDBC, Parameterized queries are created and executed using PreparedStatement interface. Parameterized queries are created using ? symbol.
+
+
+Passing Parameters to JPQL query
+--------------------------------
+Two ways to Passing parameters to JPQL Query
+i) Positional Parameter
+ii) Named Parameter
+iii) Mixed notation
+
+JPQL Query using Positional Parameter
+--------------------------------------
+
+select e.employeeId, e.employeeName, e.department from EmployeeEntity e where e.employeeId=?1 and e.departmentId=?2;
+
+In this query, ?1 and ?2is referred as positional parameter
+
+Set the values for the positional parameter
+----------------------------------------------
+Values can be set using the setParameter(int position, Object value) method of Query interface.
+
+
+JPQL query using the named Parameter
+--------------------------------------
+select e.employeeId, e.employeeName, e.department from EmployeeEntity e where e.employeeId=:empid and e.departmentId=:deptid;
+
+Equivalent SQL Statement:
+Select employeeID, employeeName, department from employee where employeeid=1 and departmentid=1001
+ 
+In this query,:empid and :deptid are the named parameters
+
+Set the values for the named parameters
+----------------------------------------------
+Values can be set using the setParameter(String parameterName, Object value) method of Query interface.
+
+JPQL query using the Mixed parameter notation
+-----------------------------------------------
+select e.employeeId, e.employeeName, e.department from EmployeeEntity e where e.employeeId=:empid and e.departmentId=?1;
+
+In this query, :empid is a named parameter and ?1 is a positional parameter.
+
+You can set the values using setParameter() method of Query interface.
+
+
+JPQL Functions in JPQL query
+------------------------------
+String JPQL functions : lower, upper
+
+JPQL Date Functions: Month
+
+JPQL Aggregate functions : count, max, min
+
+
+Same functions are available in SQL also. 
+
+
+DML JPQL Queries
+--------------------
+
+DML JPQL queries such as update and delete can be executed using executeUpdate() method of Query interface.
+These queries can be created using the positional or named parameters.
+
+
+Named Queries
+----------------
+Named queries are the JPQL queries referred using a name.
+It is not a good practice to write the JPQL queries directly in the application code i.e. in DAO layer methods.
+
+Named JPQL queries can be created/defined in 2 ways:
+---------------------------------------------------------
+	i) Using @NamedQuery annotation in Entity class. @NamedQuery annotation is a class level annotation.
+	ii) Externalizing the JPQL queries using orm.xml file
+	
+Named Queries can be referred using createNamedQuery() method of EntityManager and passing the query name as string parameter.
+	
+	iii) To define the multiple JPQL queries, you can use @NamedQueries annotation. It represent a collection of JPQL queries. It must be declared in Entity class. These are all class level annotation
+
+Externalizing the JPQL named queries using orm.xml file
+---------------------------------------------------
+Named queried can be declared in orm.xml file.This file must be located inside the META-INF directory.
+<named-query> element is used to specify the name of the JPQL Query using the name attribute of the element
+<query> element is the child element of <named-query element> to specify the JPQL query to be executed.
+
+
+Fetching Rows from the multiple tables using Joins
+----------------------------------------------------
+There are various join clauses used in SQL to join the tables and fetch the rows.
+
+The join queries can be based on common column and on the basis of foreign key column
+
+-> Join JPQL query using the common column(Non-managed) 
+
+-> Join JPQL query using the foreign key column(Managed)
+
+	
+		
+
+
+

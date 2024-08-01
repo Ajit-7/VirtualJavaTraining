@@ -1,0 +1,24 @@
+package com.accenture.lkm.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import javax.persistence.NamedQuery;
+
+import com.accenture.lkm.businessbean.CustomerBean;
+
+public interface CustomerDAO {
+	
+	Integer addCustomer(CustomerBean customer) throws Exception;
+	
+	CustomerBean findCustomerById(Integer customerId) throws Exception;
+	
+	CustomerBean updateCustomerBillById(CustomerBean customerBean) throws Exception;
+	
+	CustomerBean deleteCustomerById(Integer customerId) throws Exception;
+	
+	//JPQL
+	List<CustomerBean> getCustomersWithinDateRange(Date lowerBound,Date upperBound) throws Exception;
+
+	Integer updateCustomerBillByName(String name, Double bill)throws Exception;
+}

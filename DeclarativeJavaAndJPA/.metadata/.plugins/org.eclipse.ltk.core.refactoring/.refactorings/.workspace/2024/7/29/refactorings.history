@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Delete 11 resources" deleteContents="true" description="Delete 11 resources" element1="/Demo10000_ProgrammingParadigms" element10="/Demo10009_Streams_NonTerminalOperations" element11="/Demo10010_Streams_TerminalOperations" element2="/Demo10001_InterfaceImplementation" element3="/Demo10002_AnonymousClasses" element4="/Demo10003_LambdaExpression" element5="/Demo10004_Lambdas_Using_StandardInterfaces" element6="/Demo10005_MethodReference" element7="/Demo10006_OptionalClass" element8="/Demo10007_Streams_StreamCreations" element9="/Demo10008_Streams_PrimitiveStreams" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="11" stamp="1721102283522"/>
+</session>
